@@ -16,7 +16,7 @@ export const Header = () => {
   const handleLogout = () => {
     // Limpia el carrito
     clearCart();
-    localStorage.removeItem("cart"); // Si persistes el carrito en localStorage, se elimina
+    localStorage.removeItem("cart");
 
     // Llama a logout y muestra la notificación
     logout();
@@ -54,41 +54,56 @@ export const Header = () => {
             <HeaderSearch />
             <Link
               to={session?.token ? "/profile" : "/auth/login"}
-              className="text-lg border border-black p-2 rounded-md font-semibold flex items-center justify-center"
+              className="text-lg border border-black p-2 rounded-md font-semibold flex items-center justify-center hover:bg-gray-100 hover:text-gray-700 transition"
               style={{ width: "7.5rem", height: "3rem" }}
             >
               {session?.token ? "Perfil" : "Login"}{" "}
-              <LuUserRound className="ml-2 text-2xl" />
+              <LuUserRound className="ml-2 text-2xl hover:text-gray-700 transition" />
             </Link>
             {session?.token && (
               <button
                 onClick={handleLogout}
-                className="text-lg border border-black p-2 rounded-md font-semibold flex text-center items-center justify-center text-black hover:bg-red-100 transition duration-300 cursor-pointer"
+                className="text-lg border border-black p-2 rounded-md font-semibold flex text-center items-center justify-center text-black hover:bg-red-100 hover:text-gray-700 transition duration-300 cursor-pointer"
                 style={{ width: "7.5rem", height: "3rem" }}
               >
-                Logout <FiLogOut size={20} className="ml-2" />
+                Logout{" "}
+                <FiLogOut
+                  size={20}
+                  className="ml-2 hover:text-gray-700 transition"
+                />
               </button>
             )}
             <Link
               to="/cart"
-              className="text-lg border border-black p-2 rounded-md font-semibold flex items-center justify-center relative"
+              className="text-lg border border-black p-2 rounded-md font-semibold flex items-center justify-center relative hover:bg-gray-100 hover:text-gray-700 transition"
               style={{ width: "7.5rem", height: "3rem" }}
             >
               {totalItems > 0 ? (
                 <>
-                  <IoCartOutline className="text-2xl mr-1" /> ({totalItems})
+                  <IoCartOutline className="text-2xl mr-1 hover:text-gray-700 transition" />{" "}
+                  ({totalItems})
                 </>
               ) : (
                 <>
-                  Carrito <IoCartOutline className="text-2xl ml-1" />
+                  Carrito{" "}
+                  <IoCartOutline className="text-2xl ml-1 hover:text-gray-700 transition" />
                 </>
               )}
             </Link>
           </div>
           <nav className="flex justify-center items-center gap-6 text-[#262011] text-2xl w-full font-semibold">
-            <Link to="/catalog">Catálogo</Link>
-            {/* <Link to="/about">La PanCo</Link> */}
-            <Link to="/contact">Contacto</Link>
+            <Link
+              to="/catalog"
+              className="transition hover:underline underline-offset-14"
+            >
+              Catálogo
+            </Link>
+            <Link
+              to="/contact"
+              className="transition hover:underline underline-offset-14"
+            >
+              Contacto
+            </Link>
           </nav>
         </div>
       </div>
