@@ -1,0 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap");
+
+@import "tailwindcss";
+
+/* Establece Barlow como fuente predeterminada para todo el sitio */
+body {
+  font-family: "Barlow", sans-serif;
+}

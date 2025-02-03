@@ -1,2 +1,2 @@
-# pancomido
-Sitio postulando Panadería Pan Comido, Caldera, Atacama
+# ProyectoFinal-Hito2
+Proyecto Final Desafío Latam: Hito 2

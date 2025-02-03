@@ -1,0 +1,24 @@
+{
+  "slides": [
+    {
+      "image": "slide-001.jpg",
+      "alt": "Brioche"
+    },
+    {
+      "image": "slide-002.jpg",
+      "alt": "Galletas"
+    },
+    {
+      "image": "slide-003.jpg",
+      "alt": "Pre-Pizzas"
+    },
+    {
+      "image": "slide-004.jpg",
+      "alt": "Molde Integral"
+    },
+    {
+      "image": "slide-005.jpg",
+      "alt": "Brioche"
+    }
+  ]
+}
