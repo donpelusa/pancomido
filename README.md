@@ -6,14 +6,11 @@ Demo Live: [Pan Comido](https://pancomido-seven.vercel.app/)
 
 El segundo hito consiste en el desarrollo de la aplicación cliente con React, en donde debes:
 
-● Crear un nuevo proyecto con las dependencias acorde al diseño y temática definida
-en el hito anterior.
-● Usar los componentes para la reutilización de código y separación de secciones
-integrando los hooks necesarios que correspondan.
-● Usar React Router para la navegación de vistas por rutas.
-● Utilizar Context API para el manejo de estado global.
-● Preparar la aplicación para el consumo de datos siguiendo el contrato definido en el
-hito anterior.
+- Crear un nuevo proyecto con las dependencias acorde al diseño y temática definida en el hito anterior.
+- Usar los componentes para la reutilización de código y separación de secciones integrando los hooks necesarios que correspondan.
+- Usar React Router para la navegación de vistas por rutas.
+- Utilizar Context API para el manejo de estado global.
+- Preparar la aplicación para el consumo de datos siguiendo el contrato definido en el hito anterior.
 
 Se recomienda utilizar un framework de CSS para agilizar la construcción de la interfaz
 gráfica del proyecto.
