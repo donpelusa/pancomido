@@ -1,3 +1,5 @@
+// src/hooks/useAuth.jsx
+
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthProvider";
 import userTest from "../data/userTest.json"; // Importar el JSON con los usuarios de prueba

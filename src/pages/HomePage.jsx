@@ -1,3 +1,5 @@
+// src/pages/HomePage.jsx
+
 import { useEffect, useState } from "react";
 
 /* Import Swiper */

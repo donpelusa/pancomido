@@ -1,3 +1,5 @@
+// src/hooks/useProducts.jsx
+
 import { useContext, useEffect, useState } from "react";
 import { ProductContext } from "../context/ProductProvider";
 import { getProducts } from "../helpers/fakeStoreAPI"; // 🔹 Importación corregida

@@ -1,4 +1,5 @@
-// LoginForm.jsx
+// src/components/LoginForm.jsx
+
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -29,16 +30,19 @@ export const LoginForm = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://fakestoreapi.com/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: login.email,
-          password: login.password,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mail: login.email,
+            password: login.password,
+          }),
+        }
+      );
 
       const rawData = await response.text(); // 🔍 Leer la respuesta como texto primero
       let data;

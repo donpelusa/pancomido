@@ -1,3 +1,5 @@
+// src/context/ProductProvider.jsx
+
 import { createContext, useState, useEffect } from "react";
 import { getProducts } from "../helpers/fakeStoreAPI"; // Importar la API de productos
 

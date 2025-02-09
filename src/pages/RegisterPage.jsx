@@ -1,3 +1,5 @@
+// src/pages/RegisterPage.jsx
+
 import { RegisterForm } from "../components/RegisterForm";
 import { Link } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";

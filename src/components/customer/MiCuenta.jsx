@@ -1,3 +1,5 @@
+// src/components/customer/MiCuenta.jsx
+
 import { useAuth } from "../../hooks/useAuth";
 
 export const MiCuenta = () => {

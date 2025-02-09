@@ -1,3 +1,5 @@
+// src/components/customer/MisPedidos.jsx
+
 import { useEffect, useState } from "react";
 
 export const MisPedidos = () => {

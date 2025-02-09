@@ -1,3 +1,5 @@
+// src/layouts/AdminLayout.jsx
+
 import {
   UserOutlined,
   VideoCameraOutlined,

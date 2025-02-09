@@ -1,3 +1,5 @@
+// src/layouts/MainLayout.jsx
+
 import { Outlet } from "react-router-dom";
 import { Marques } from "../components/Marques";
 import { Header } from "../components/Header";

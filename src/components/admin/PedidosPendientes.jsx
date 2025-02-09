@@ -1,3 +1,5 @@
+// src/components/admin/PedidosPendientes.jsx
+
 import { useEffect, useState } from "react";
 
 export const PedidosPendientes = () => {

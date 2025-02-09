@@ -1,4 +1,5 @@
-// RegisterForm.jsx
+// src/components/RegisterForm.jsx
+
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -70,13 +71,16 @@ export const RegisterForm = () => {
     const payload = buildPayload();
 
     try {
-      const response = await fetch("https://fakestoreapi.com/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error en el registro");

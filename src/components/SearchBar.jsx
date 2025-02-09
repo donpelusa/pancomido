@@ -1,3 +1,5 @@
+// src/components/SearchBar.jsx
+
 import { useState, useEffect, useRef } from "react";
 import { useProducts } from "../hooks/useProducts";
 import { useNavigate, useLocation } from "react-router-dom";

@@ -1,3 +1,5 @@
+// src/components/Footer.jsx
+
 import logo from "../assets/images/logoRedondo_cortado.png";
 
 export const Footer = () => {

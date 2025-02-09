@@ -1,4 +1,5 @@
 // src/pages/SuccessPage.jsx
+
 import { useEffect } from "react";
 import { useCart } from "../hooks/useCart";
 import { useNavigate } from "react-router-dom";

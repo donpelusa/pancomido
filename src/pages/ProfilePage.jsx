@@ -1,3 +1,5 @@
+// src/pages/ProfilePage.jsx
+
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -99,23 +101,3 @@ export const ProfilePage = () => {
     </div>
   );
 };
-
-/* ✅ Definir correctamente todos los componentes */
-
-/* COMPONENTES PARA CUSTOMER */
-// const MiCuenta = () => <p>Resumen de tus compras y datos personales.</p>;
-// const MisPedidos = () => <p>Lista con los pedidos realizados.</p>;
-// const MisDirecciones = () => <p>Tus direcciones de envío registradas.</p>;
-// const MisDatos = () => <p>Edita tu información personal.</p>;
-// const MisFavoritos = () => (
-//   <p>Lista de productos que marcaste como favoritos.</p>
-// );
-
-// /* COMPONENTES PARA ADMIN */
-// const ResumenTienda = () => <p>Resumen general de la tienda.</p>;
-// const EditarCatalogo = () => (
-//   <p>Aquí puedes editar el catálogo de productos.</p>
-// );
-// const PedidosPendientes = () => <p>Lista de pedidos pendientes.</p>;
-// const PedidosHistoricos = () => <p>Historial completo de pedidos.</p>;
-// const EditarUsuarios = () => <p>Administra los usuarios de la tienda.</p>;

@@ -1,3 +1,5 @@
+// src/pages/LoginPage.jsx
+
 import { LoginForm } from "../components/LoginForm";
 import { Link } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";

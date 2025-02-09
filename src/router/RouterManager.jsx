@@ -1,3 +1,5 @@
+// src/router/RouterManager.jsx
+
 import { useAuth } from "../hooks/useAuth";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";

@@ -1,3 +1,5 @@
+// src/components/admin/EditarCatalogo.jsx
+
 import { useEffect, useState } from "react";
 
 export const EditarCatalogo = () => {

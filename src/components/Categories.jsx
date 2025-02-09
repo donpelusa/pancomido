@@ -1,4 +1,5 @@
 // src/components/Categories.jsx
+
 import { getCategories } from "../helpers/fakeStoreAPI"; // Simulación de datos
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

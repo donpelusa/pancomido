@@ -1,3 +1,5 @@
+// src/pages/CartPage.jsx
+
 import { Button, Card, List, Space, Typography, Image, Input } from "antd";
 import { useState } from "react";
 import { useCart } from "../hooks/useCart";

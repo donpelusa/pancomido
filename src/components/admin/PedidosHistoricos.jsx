@@ -1,3 +1,5 @@
+// src/components/admin/PedidosHistoricos.jsx
+
 import { useEffect, useState } from "react";
 
 export const PedidosHistoricos = () => {

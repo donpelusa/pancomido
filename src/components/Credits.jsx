@@ -1,4 +1,6 @@
-import React, { useEffect } from "react";
+// src/components/Credits.jsx
+
+import { useEffect } from "react";
 
 export const Credits = () => {
   // Inyecta el link de Google Fonts para "Fira Code"

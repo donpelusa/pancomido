@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+// src/components/admin/EditarUsuarios.jsx
+
+import { useEffect, useState } from "react";
 
 export const EditarUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);

@@ -1,5 +1,6 @@
 // src/pages/CheckoutPage.jsx
-import React, { useState } from "react";
+
+import { useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -26,18 +27,52 @@ export const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("credito");
 
   // Calcula el total del carrito
-  const totalPayment = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const totalPayment = cart.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
 
   const handleContactChange = (e) => {
     const { name, value } = e.target;
     setContactData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRealizarCompra = (e) => {
+  const handleRealizarCompra = async (e) => {
     e.preventDefault();
-    // Aquí se simula el procesamiento de la compra.
-    // Una vez completado, redirige a SuccessPage.
-    navigate("/success");
+    const payload = {
+      id_address: selectedAddress,
+      order_delivery_date: "2025-03-01", // O generar dinámicamente la fecha
+      order_address: "Dirección de ejemplo", // Reemplazar con el dato real
+      order_city: "Ciudad de ejemplo",
+      order_region: "Región de ejemplo",
+      order_postal_code: "000000",
+      order_phone: contactData.phone,
+      items: cart.map((item) => ({
+        productId: item.id,
+        units: item.quantity,
+        unit_price: item.price,
+      })),
+    };
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/orders/checkout`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!response.ok) {
+        // Manejar error según la respuesta (por ejemplo, stock insuficiente)
+        throw new Error("Error al procesar la orden");
+      }
+      // Si la orden se procesa correctamente:
+      navigate("/success");
+    } catch (error) {
+      console.error(error);
+      // Mostrar error mediante toast o similar
+    }
   };
 
   return (
@@ -54,7 +89,10 @@ export const CheckoutPage = () => {
             <p className="mb-2 text-gray-700">Elige una dirección de envío:</p>
             <div className="space-y-2">
               {addresses.map((addr) => (
-                <label key={addr.id} className="flex items-center space-x-2 cursor-pointer">
+                <label
+                  key={addr.id}
+                  className="flex items-center space-x-2 cursor-pointer"
+                >
                   <input
                     type="radio"
                     name="address"
@@ -71,7 +109,9 @@ export const CheckoutPage = () => {
 
           {/* Datos de contacto */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Confirma tus datos de contacto</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Confirma tus datos de contacto
+            </h3>
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-gray-700">
@@ -114,7 +154,9 @@ export const CheckoutPage = () => {
           {/* Opciones de pago */}
           <div className="mb-6">
             <hr className="mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Elige tu método de pago</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Elige tu método de pago
+            </h3>
             <div className="flex items-center space-x-4">
               <label className="flex items-center space-x-1 cursor-pointer">
                 <input
@@ -155,7 +197,9 @@ export const CheckoutPage = () => {
 
         {/* Panel Derecho (1/3): Resumen del carrito */}
         <div className="col-span-1 bg-white p-6 border border-gray-300 rounded-lg flex flex-col">
-          <h3 className="text-xl font-bold mb-4 text-center">Resumen de Compra</h3>
+          <h3 className="text-xl font-bold mb-4 text-center">
+            Resumen de Compra
+          </h3>
           <div className="flex-1 overflow-y-auto mb-4">
             {cart.length === 0 ? (
               <p>No hay productos en el carrito.</p>
@@ -169,10 +213,14 @@ export const CheckoutPage = () => {
                       className="w-12 h-12 object-cover rounded"
                     />
                     <div className="flex-1">
-                      <p className="text-sm font-semibold truncate">{item.title}</p>
+                      <p className="text-sm font-semibold truncate">
+                        {item.title}
+                      </p>
                       <p className="text-xs text-gray-600">x {item.quantity}</p>
                     </div>
-                    <div className="text-sm font-bold">${item.price.toFixed(2)}</div>
+                    <div className="text-sm font-bold">
+                      ${item.price.toFixed(2)}
+                    </div>
                   </li>
                 ))}
               </ul>

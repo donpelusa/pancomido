@@ -1,3 +1,5 @@
+// src/pages/Page404.jsx
+
 import { Fragment } from "react";
 import { Link } from "react-router-dom";
 import pancito404 from "../assets/images/pancito_404.png";

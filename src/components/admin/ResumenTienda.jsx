@@ -1,3 +1,5 @@
+// src/components/admin/ResumenTienda.jsx
+
 import { useEffect, useState } from "react";
 
 export const ResumenTienda = () => {

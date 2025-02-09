@@ -1,3 +1,5 @@
+// src/hooks/useEncrypt.jsx
+
 import CryptoJs from "crypto-js";
 import { useState } from "react";
 const { VITE_CRYPTOJS_SECRET } = import.meta.env;

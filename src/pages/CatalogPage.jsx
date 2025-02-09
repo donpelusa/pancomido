@@ -1,3 +1,5 @@
+// src/pages/CatalogPage.jsx
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Categories } from "../components/Categories";
