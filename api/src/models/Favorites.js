@@ -1,4 +1,4 @@
-// api/src/models/Favorites.js
+// src/models/Favorites.js
 
 const db = require('../config/db');
 const schema = process.env.DB_SCHEMA;

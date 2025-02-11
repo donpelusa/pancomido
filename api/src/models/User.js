@@ -1,4 +1,4 @@
-// api/src/models/User.js
+// src/models/User.js
 
 const db = require('../config/db');
 const bcrypt = require('bcrypt');

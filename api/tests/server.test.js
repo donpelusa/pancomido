@@ -1,4 +1,4 @@
-// api/tests/auth.test.js
+// tests/auth.test.js
 const request = require('supertest');
 const app = require('../src/server');
 

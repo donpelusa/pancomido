@@ -1,4 +1,4 @@
-// api/src/controllers/user.controller.js
+// src/controllers/user.controller.js
 
 const User = require('../models/User');
 const Address = require('../models/Address');

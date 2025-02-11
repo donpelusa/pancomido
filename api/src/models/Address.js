@@ -1,4 +1,4 @@
-// api/src/models/Address.js
+// src/models/Address.js
 const db = require('../config/db');
 const schema = process.env.DB_SCHEMA;
 

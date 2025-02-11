@@ -1,4 +1,4 @@
-// api/src/routes/product.routes.js
+// src/routes/product.routes.js
 
 /**
  * @swagger

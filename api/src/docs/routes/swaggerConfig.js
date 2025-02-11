@@ -1,4 +1,4 @@
-// api/src/docs/routes/swaggerConfig.js
+// src/docs/routes/swaggerConfig.js
 
 const swaggerJSDoc = require('swagger-jsdoc');
 

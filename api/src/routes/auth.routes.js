@@ -1,10 +1,8 @@
-// api/src/routes/auth.routes.js
-
 /**
  * @swagger
  * tags:
- *   name: Auth
- *   description: Endpoints de autenticación de usuarios
+ *   - name: Auth
+ *     description: Endpoints de autenticación y reseteo de contraseña
  *
  * /auth/register:
  *   post:
@@ -69,22 +67,72 @@
  *     responses:
  *       200:
  *         description: Ruta de prueba funcionando.
+ *
+ * /auth/reset-password/request:
+ *   post:
+ *     summary: Solicitar reseteo de contraseña
+ *     description: Genera y envía un código de 6 dígitos a la cuenta de correo del usuario. El código es válido por 5 minutos.
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Email del usuario para el reseteo.
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *             example:
+ *               email: "usuario@example.com"
+ *     responses:
+ *       200:
+ *         description: Código enviado.
+ *       404:
+ *         description: Usuario no encontrado.
+ *
+ * /auth/reset-password/confirm:
+ *   post:
+ *     summary: Confirmar reseteo de contraseña
+ *     description: Valida el código enviado y permite cambiar la contraseña.
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Se requiere enviar el email, el código recibido y la nueva contraseña.
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               resetCode:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *             example:
+ *               email: "usuario@example.com"
+ *               resetCode: "123456"
+ *               newPassword: "nuevaContraseña123"
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada exitosamente.
+ *       400:
+ *         description: Código inválido o expirado.
  */
 
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 
-// // Opcional: para confirmar que el archivo se carga, agrega un log
-// console.log('auth.routes cargado');
-
 // Endpoint para registrar usuario
 router.post('/register', authController.register);
 // Endpoint para login
 router.post('/login', authController.login);
-
-// También puedes agregar una ruta de prueba temporal:
+// Ruta de prueba
 router.get('/test', (req, res) => res.json({ message: 'Ruta de prueba auth funcionando' }));
-
+// Rutas para reseteo de contraseña
+router.post('/reset-password/request', authController.resetPasswordRequest);
+router.post('/reset-password/confirm', authController.resetPasswordConfirm);
 
 module.exports = router;

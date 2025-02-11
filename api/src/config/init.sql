@@ -1,4 +1,4 @@
--- // api/src/config/init.sql
+-- // src/config/init.sql
 
 --------------------------------------------------------------------------------
 -- CREACIÓN DE BD y SCHEMA
@@ -82,6 +82,19 @@ CREATE TABLE pancomido.users (
 
 -- Índice en users para role_id (si es necesario filtrar por rol)
 CREATE INDEX idx_users_role_id ON pancomido.users (role_id);
+
+-- Tabla de solicitudes de reseteo de contraseña
+
+CREATE TABLE pancomido.password_reset_requests (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(100) NOT NULL,
+    reset_code VARCHAR(6) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+
 
 -- Tabla direcciones
 CREATE TABLE pancomido.address (
@@ -208,6 +221,7 @@ CREATE TABLE pancomido.product_img (
     id          SERIAL          PRIMARY KEY,
     id_product  INT             NOT NULL,
     url_img     VARCHAR(300)    NOT NULL,
+    cloudinary_public_id VARCHAR(255) NOT null,
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_imgprod_product FOREIGN KEY (id_product) 
@@ -229,7 +243,7 @@ CREATE TABLE pancomido.stock (
     CONSTRAINT fk_stock_product FOREIGN KEY (id_product) 
         REFERENCES pancomido.products(id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
 );
 
 -- Índice en stock para id_product

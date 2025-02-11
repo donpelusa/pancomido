@@ -1,5 +1,4 @@
-// api/src/config/db.js
-
+// src/config/db.js
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -19,6 +18,8 @@ pool.on('connect', (client) => {
         if (err) {
             console.error('Error setting search_path:', err);
         }
+        console.log("Usando schema:", process.env.DB_SCHEMA);
+
     });
 });
 

@@ -1,4 +1,4 @@
-// api/src/models/Auth.js
+// src/models/Auth.js
 const jwt = require('jsonwebtoken');
 
 const generateToken = (user) => {

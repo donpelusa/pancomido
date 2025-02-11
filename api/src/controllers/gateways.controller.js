@@ -1,4 +1,4 @@
-// api/src/controllers/gateways.controller.js
+// src/controllers/gateways.controller.js
 
 const paymentService = require('../services/paymentService');
 

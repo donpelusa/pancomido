@@ -2,38 +2,39 @@
 
 import { createContext, useEffect, useState } from "react";
 import { useStorage } from "../hooks/useStorage";
-import userTest from "../data/userTest.json"; // ✅ Importamos usuarios de prueba
 
+// Creamos el contexto de autenticación
 export const AuthContext = createContext();
 
+// Función para decodificar el token JWT (solo el payload)
+const decodeToken = (token) => {
+  try {
+    const payload = token.split(".")[1];
+    return JSON.parse(atob(payload));
+  } catch (error) {
+    console.error("Error decoding token", error);
+    return {};
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const { handleSetStorageSession, handleGetStorageSession, decrypted } =
-    useStorage();
+  const { handleSetStorageSession, handleGetStorageSession } = useStorage();
   const [session, setSession] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Al guardar la sesión, decodificamos el token para extraer datos (por ejemplo, role)
   const handleSession = (newSession) => {
-    // console.log("Sesion antes de asignar rol:", newSession); // 🔍 Debug
-
-    // 🔥 **Forzar la actualización del rol antes de guardar la sesión**
-    const foundUser = userTest.users.find(
-      (user) => user.username === newSession.email
-    );
-
-    const updatedSession = {
-      ...newSession,
-      role: foundUser ? foundUser.role : "customer", // ✅ Ahora sí toma el rol correcto
-    };
-
-    // console.log("Sesion guardada en AuthProvider:", updatedSession); // 🔍 Debug
-
-    setSession(updatedSession);
-    handleSetStorageSession(updatedSession); // ✅ Guardar en almacenamiento local
+    if (newSession.token) {
+      const decoded = decodeToken(newSession.token);
+      newSession = { ...newSession, ...decoded };
+    }
+    setSession(newSession);
+    handleSetStorageSession(newSession);
   };
 
   const logout = () => {
     setSession(null);
-    localStorage.removeItem("session");
+    localStorage.removeItem("USER_SESSION");
   };
 
   useEffect(() => {
@@ -41,26 +42,14 @@ export const AuthProvider = ({ children }) => {
     if (storedSession) {
       try {
         const parsedSession = JSON.parse(storedSession);
-        const foundUser = userTest.users.find(
-          (user) => user.username === parsedSession.email
-        );
-
-        const finalSession = {
-          ...parsedSession,
-          role: foundUser ? foundUser.role : "customer", // ✅ Asegurar rol correcto
-        };
-
-        // console.log("Sesion recuperada en AuthProvider:", finalSession); // 🔍 Debug
-
-        setSession(finalSession);
+        setSession(parsedSession);
       } catch (error) {
-        console.error("Error al analizar la sesión almacenada:", error);
+        console.error("Error parsing stored session:", error);
         setSession(null);
       }
     }
-
     setIsLoading(false);
-  }, []);
+  }, [handleGetStorageSession]);
 
   return (
     <AuthContext.Provider value={{ session, isLoading, handleSession, logout }}>

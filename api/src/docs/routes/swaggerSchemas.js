@@ -1,4 +1,4 @@
-// api/src/docs/routes/swaggerSchemas.js
+// src/docs/routes/swaggerSchemas.js
 
 /**
  * @swagger
@@ -129,4 +129,54 @@
  *         paymentId: "PAY123456"
  *         status: "created"
  *         details: {}
+  *     ImageUploadResponse:
+ *       type: object
+ *       properties:
+ *         secure_url:
+ *           type: string
+ *         public_id:
+ *           type: string
+ *       example:
+ *         secure_url: "https://res.cloudinary.com/tu-cuenta/image/upload/v1620000000/products/1234/imagen1.jpg"
+ *         public_id: "products/1234/imagen1"
+ *
+ * /upload:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Subir una imagen a Cloudinary para un producto.
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               productId:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Imagen subida correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ImageUploadResponse'
+ *
+ *   delete:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Eliminar una imagen de Cloudinary.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               public_id:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Imagen eliminada correctamente.
  */

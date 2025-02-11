@@ -1,4 +1,4 @@
-// api/src/routes/admin.routes.js
+// src/routes/admin.routes.js
 
 /**
  * @swagger

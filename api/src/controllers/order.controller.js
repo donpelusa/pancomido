@@ -1,4 +1,4 @@
-// api/src/controllers/order.controller.js
+// src/controllers/order.controller.js
 
 const db = require('../config/db');
 const schema = process.env.DB_SCHEMA;

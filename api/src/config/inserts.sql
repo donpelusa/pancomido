@@ -1,4 +1,4 @@
--- // api/src/config/inserts.sql
+-- // src/config/inserts.sql
 
 -- Insertar los status y sus descripciones
 INSERT INTO pancomido.order_status (status, description) VALUES

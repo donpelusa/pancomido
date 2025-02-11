@@ -1,4 +1,4 @@
-// api/src/controllers/favorites.controller.js
+// src/controllers/favorites.controller.js
 
 const Favorites = require('../models/Favorites');
 

@@ -1,4 +1,4 @@
-// api/src/controllers/product.controller.js
+// src/controllers/product.controller.js
 
 const db = require('../config/db');
 const schema = process.env.DB_SCHEMA;

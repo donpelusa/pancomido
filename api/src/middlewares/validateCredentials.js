@@ -1,4 +1,4 @@
-// api/src/middlewares/validateCredentials.js
+// src/middlewares/validateCredentials.js
 
 module.exports = (req, res, next) => {
     const { mail, password } = req.body;

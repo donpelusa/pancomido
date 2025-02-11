@@ -1,4 +1,4 @@
-// api/src/controllers/address.controller.js
+// src/controllers/address.controller.js
 
 const Address = require('../models/Address');
 

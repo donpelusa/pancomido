@@ -1,4 +1,4 @@
-// api/src/routes/order.routes.js
+// src/routes/order.routes.js
 
 /**
  * @swagger

@@ -1,4 +1,4 @@
-// api/index.js
+// index.js
 require('dotenv').config();
 const app = require('./src/server');
 

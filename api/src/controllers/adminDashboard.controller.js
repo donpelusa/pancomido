@@ -1,5 +1,3 @@
-// api/src/controllers/adminDashboard.controller.js
-
 const db = require('../config/db');
 const schema = process.env.DB_SCHEMA;
 

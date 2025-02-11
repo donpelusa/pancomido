@@ -1,4 +1,4 @@
-// api/src/controllers/adminUsers.controller.js
+// src/controllers/adminUsers.controller.js
 
 /*
     * Controladores para la administración de usuarios.

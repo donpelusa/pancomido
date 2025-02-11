@@ -5,9 +5,7 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "test": "jest --coverage",
-    "lint": "eslint .",
-    "start:prod": "NODE_ENV=production node index.js"
+    "test": "jest --coverage"
   },
   "keywords": [],
   "author": "",

@@ -1,7 +1,5 @@
-// api/src/server.js
-
-
-
+// src/server.js
+const uploadRoute = require('./routes/uploadRoute.js');
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -9,36 +7,20 @@ const routes = require('./routes/routes.js');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/routes/swaggerConfig.js');
 
+
 const app = express();
 
-const allowedOrigins = [
-    'https://pancomido-donpelusas-projects.vercel.app',
-    'https://pancomido-git-main-donpelusas-projects.vercel.app',
-    'https://pancomido-seven.vercel.app'
-];
-
 // Middlewares
-app.use(cors({
-    origin: function (origin, callback) {
-        // Permitir peticiones sin origen (por ejemplo, herramientas o requests desde curl)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        } else {
-            return callback(new Error('CORS: Origen no autorizado'));
-        }
-    }
-}));
-
+app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// // Middleware de debug: muestra la URL y el método de cada petición
-// app.use((req, res, next) => {
-//     console.log(`Petición: ${req.method} ${req.originalUrl}`);
-//     next();
-// });
+// Middleware de debug: muestra la URL y el método de cada petición
+app.use((req, res, next) => {
+    console.log(`DEBUG: Received ${req.method} request for ${req.originalUrl}`);
+    next();
+});
 
 // Rutas de la API
 app.use('/api', routes);

@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 
 export const Header = () => {
   const { session, logout } = useAuth();
-  const { cart, clearCart } = useCart(); // Desestructuramos clearCart del objeto devuelto
+  const { cart, clearCart } = useCart();
   const navigate = useNavigate();
 
   const handleLogout = () => {

@@ -1,4 +1,4 @@
-// api/src/middlewares/validateToken.js
+// src/middlewares/validateToken.js
 
 const jwt = require('jsonwebtoken');
 

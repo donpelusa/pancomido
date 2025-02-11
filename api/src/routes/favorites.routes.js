@@ -1,4 +1,4 @@
-// api/src/routes/favorites.routes.js
+// src/routes/favorites.routes.js
 
 /**
  * @swagger

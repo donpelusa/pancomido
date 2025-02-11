@@ -1,4 +1,4 @@
-// api/src/routes/uploadRoute.js
+// src/routes/uploadRoute.js
 
 /**
  * @swagger
@@ -34,9 +34,12 @@
  *         description: Error al subir imágenes.
  */
 
+// src/routes/uploadRoute.js
 const express = require('express');
 const multer = require('multer');
-const cloudinary = require('../../cloudinaryConfig.js');
+const { uploadImage, deleteImage } = require('../helpers/cloudinaryHelper');
+const { validateToken } = require('../middlewares/validateToken');
+const isAdmin = require('../middlewares/isAdmin');
 
 const router = express.Router();
 
@@ -44,38 +47,38 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({
     storage,
-    limits: { files: 4 } // Limita a 4 archivos por producto
+    limits: { files: 4 } // Limita a 4 archivos
 });
 
-router.post('/', upload.array('images', 4), async (req, res) => {
+// Endpoint para subir imágenes a Cloudinary, exclusivo para Admin
+router.post('/', validateToken, isAdmin, upload.single('image'), async (req, res) => {
     try {
-        const productId = req.body.productId; // Se espera que el front envíe productId
-        const uploadResults = [];
-
-        // Procesa cada archivo recibido
-        for (const file of req.files) {
-            // Convierte el buffer a una cadena en formato base64
-            const fileStr = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-
-            // Sube a Cloudinary
-            const result = await cloudinary.uploader.upload(fileStr, {
-                folder: `productos/${productId}` // Organiza las imágenes por producto
-            });
-
-            // Guarda el resultado en un arreglo
-            uploadResults.push({
-                url: result.secure_url,
-                public_id: result.public_id,
-                productId
-            });
+        if (!req.file) {
+            return res.status(400).json({ error: "No se ha enviado ningún archivo." });
         }
-
-        // Retorna los resultados sin realizar inserción en la base de datos.
-        res.status(200).json({ message: 'Imágenes subidas correctamente', images: uploadResults });
+        // req.file contiene buffer y mimetype
+        const result = await uploadImage(req.file.buffer, req.file.mimetype, `productos/${req.body.productId || ''}`);
+        // Devuelve la URL y el public_id para usar en la carga del producto
+        res.status(200).json({ secure_url: result.secure_url, public_id: result.public_id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error al subir imágenes', error: error.message });
+        res.status(500).json({ message: "Error al subir imagen", error: error.message });
+    }
+});
+
+// Endpoint para eliminar una imagen de Cloudinary, exclusivo para Admin
+router.delete('/', validateToken, isAdmin, async (req, res) => {
+    try {
+        const { public_id } = req.body;
+        if (!public_id) {
+            return res.status(400).json({ error: "Se requiere el public_id de la imagen a eliminar." });
+        }
+        const result = await deleteImage(public_id);
+        res.status(200).json({ message: "Imagen eliminada", result });
+    } catch (error) {
+        res.status(500).json({ message: "Error al eliminar imagen", error: error.message });
     }
 });
 
 module.exports = router;
+
