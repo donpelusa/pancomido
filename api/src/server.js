@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas de la API
-app.use(routes);
+app.use('/api', routes);
 
 // Endpoint para la documentación Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
