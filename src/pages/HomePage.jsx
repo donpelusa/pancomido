@@ -15,7 +15,7 @@ import imagesData from "../data/images.json";
 import promoData from "../data/promo.json";
 
 /* Importar Categorías FakeAPI */
-import { getCategories } from "../helpers/fakeStoreAPI"; // Simulación de datos
+import { getCategories } from "../helpers/getProductData.helper"; // Simulación de datos
 import { Categories } from "../components/Categories";
 
 /* Importar Framer Motion */

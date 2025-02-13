@@ -1,24 +1,25 @@
 // src/hooks/useProducts.jsx
-
 import { useContext, useEffect, useState } from "react";
 import { ProductContext } from "../context/ProductProvider";
-import { getProducts } from "../helpers/fakeStoreAPI"; // 🔹 Importación corregida
+import { getProducts } from "../helpers/getProductData.helper";
 
-export const useProducts = () => {
+export const useProducts = (query = "") => {
   const { products, setProducts } = useContext(ProductContext);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!products.length) {
-      getProducts().then((data) => {
+    // Se vuelve a hacer fetch cada vez que cambie la query (por ejemplo, ?category=...)
+    setLoading(true);
+    getProducts(query)
+      .then((data) => {
         setProducts(data);
         setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching products:", err);
+        setLoading(false);
       });
-      // getProducts().then(console.log).catch(console.error);
-    } else {
-      setLoading(false);
-    }
-  }, [products, setProducts]);
+  }, [query, setProducts]);
 
   return { products, loading };
 };

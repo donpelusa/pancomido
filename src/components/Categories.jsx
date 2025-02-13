@@ -1,6 +1,4 @@
 // src/components/Categories.jsx
-
-import { getCategories } from "../helpers/fakeStoreAPI"; // Simulación de datos
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,7 +7,28 @@ export const Categories = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getCategories().then(setCategories);
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/categories`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Error al obtener categorías");
+        }
+        const data = await response.json();
+
+        setCategories(data.map((item) => item.category));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   const handleCategoryClick = (category) => {

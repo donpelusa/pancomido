@@ -1,5 +1,4 @@
 // src/pages/CatalogPage.jsx
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Categories } from "../components/Categories";
@@ -8,63 +7,43 @@ import { FaHeart, FaTimes } from "react-icons/fa";
 import { Dropdown, Menu, Button } from "antd";
 
 export const CatalogPage = () => {
-  const { products } = useProducts();
   const location = useLocation();
   const navigate = useNavigate();
-  const [filteredProducts, setFilteredProducts] = useState(products);
+
+  // Se le pasa location.search directamente para que el hook haga el fetch con esos parámetros
+  const { products, loading } = useProducts(location.search);
+  const [orderedProducts, setOrderedProducts] = useState([]);
+
+  // Para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Extraemos los parámetros "search" y "category" de la URL
-  const searchQuery = new URLSearchParams(location.search).get("search") || "";
-  const categoryQuery =
-    new URLSearchParams(location.search).get("category") || "";
-
-  // Resetea el scroll al tope cuando se monta el componente
+  // Lógica de ordenamiento (se realiza en el frontend sobre los datos ya filtrados)
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  // Filtramos los productos según el query de búsqueda o categoría
-  useEffect(() => {
-    let filtered;
-    if (categoryQuery.trim() !== "") {
-      filtered = products.filter(
-        (product) =>
-          product.category.toLowerCase() === categoryQuery.toLowerCase()
-      );
-    } else if (searchQuery.trim() !== "") {
-      const lowerQuery = searchQuery.toLowerCase();
-      filtered = products.filter((product) =>
-        product.title.toLowerCase().includes(lowerQuery)
-      );
-    } else {
-      filtered = products;
-    }
-    setFilteredProducts(filtered);
+    // Al recibir productos del backend ya filtrados, se guardan en orderedProducts
+    setOrderedProducts(products);
     setCurrentPage(1);
-  }, [categoryQuery, searchQuery, products]);
+  }, [products]);
 
-  // Función para el ordenamiento (se conserva la lógica ya implementada)
   const handleMenuClick = ({ key }) => {
-    let sortedProducts = [...filteredProducts];
+    let sorted = [...orderedProducts];
     switch (key) {
       case "a-z":
-        sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
+        sorted.sort((a, b) => a.product.localeCompare(b.product));
         break;
       case "z-a":
-        sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
+        sorted.sort((a, b) => b.product.localeCompare(a.product));
         break;
       case "max-min":
-        sortedProducts.sort((a, b) => b.price - a.price);
+        sorted.sort((a, b) => b.price - a.price);
         break;
       case "min-max":
-        sortedProducts.sort((a, b) => a.price - b.price);
+        sorted.sort((a, b) => a.price - b.price);
         break;
       default:
         break;
     }
-    setFilteredProducts(sortedProducts);
+    setOrderedProducts(sorted);
     setCurrentPage(1);
   };
 
@@ -80,15 +59,19 @@ export const CatalogPage = () => {
     />
   );
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const displayedProducts = filteredProducts.slice(
+  const totalPages = Math.ceil(orderedProducts.length / itemsPerPage);
+  const displayedProducts = orderedProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Tag que indica el filtro activo (prioriza categoría sobre búsqueda)
+  // Para mostrar el filtro activo: se extrae la query (category o search)
+  const params = new URLSearchParams(location.search);
+  const categoryQuery = params.get("category");
+  const searchQuery = params.get("search");
+
   let activeFilterTag = null;
-  if (categoryQuery.trim() !== "") {
+  if (categoryQuery) {
     activeFilterTag = (
       <div
         className="flex items-center bg-[#262011] text-[#f5e1a4] px-3 py-1 rounded-full cursor-pointer"
@@ -97,7 +80,7 @@ export const CatalogPage = () => {
         Filtrando por: "{categoryQuery}" <FaTimes className="ml-1" />
       </div>
     );
-  } else if (searchQuery.trim() !== "") {
+  } else if (searchQuery) {
     activeFilterTag = (
       <div
         className="flex items-center bg-[#262011] text-[#f5e1a4] px-3 py-1 rounded-full cursor-pointer"
@@ -111,7 +94,7 @@ export const CatalogPage = () => {
   return (
     <div className="container mx-auto px-4 py-4">
       <h2 className="text-3xl font-semibold">Catálogo de Productos</h2>
-      {/* Categorías */}
+      {/* Muestra las categorías */}
       <Categories />
 
       {/* Resultados y Filtros */}
@@ -127,7 +110,7 @@ export const CatalogPage = () => {
             }}
             className="bg-gray-300 p-2 border border-black rounded-md flex items-center"
           >
-            Resultados: {filteredProducts.length} productos
+            Resultados: {orderedProducts.length} productos
           </div>
           {activeFilterTag}
         </div>
@@ -149,24 +132,28 @@ export const CatalogPage = () => {
 
       {/* Grilla de Productos */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {displayedProducts.map((product) => (
-          <Link
-            key={product.id}
-            to={`/product/${product.id}`}
-            className="p-4 relative block hover:bg-gray-100 transition duration-200 rounded-2xl"
-          >
-            <FaHeart className="absolute top-2 right-2 text-black cursor-pointer" />
-            <div className="bg-white w-full h-68 flex items-center justify-center border border-black p-4 rounded-2xl">
-              <img
-                src={product.image}
-                alt={product.title}
-                className="h-full object-contain"
-              />
-            </div>
-            <p className="mt-2 font-semibold">{product.title}</p>
-            <p className="text-gray-600">${product.price}</p>
-          </Link>
-        ))}
+        {loading ? (
+          <p>Cargando productos...</p>
+        ) : (
+          displayedProducts.map((product) => (
+            <Link
+              key={product.id}
+              to={`/product/${product.id}`}
+              className="p-4 relative block hover:bg-gray-100 transition duration-200 rounded-2xl"
+            >
+              <FaHeart className="absolute top-2 right-2 text-black cursor-pointer" />
+              <div className="bg-white w-full h-68 flex items-center justify-center border border-black p-4 rounded-2xl">
+                <img
+                  src={product.url_img}
+                  alt={product.product}
+                  className="h-full object-contain"
+                />
+              </div>
+              <p className="mt-2 font-semibold">{product.product}</p>
+              <p className="text-gray-600">${product.price}</p>
+            </Link>
+          ))
+        )}
       </div>
 
       {/* Paginación */}

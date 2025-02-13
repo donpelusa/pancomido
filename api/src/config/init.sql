@@ -122,18 +122,20 @@ CREATE INDEX idx_address_id_user ON pancomido.address (id_user);
 CREATE INDEX idx_address_id_city ON pancomido.address (id_city);
 
 -- Tabla productos
+-- Tabla productos
 CREATE TABLE pancomido.products (
     id           SERIAL          PRIMARY KEY,
     product      VARCHAR(100)    NOT NULL,
     ingredients  TEXT,
     price        INTEGER         NOT NULL CHECK (price >= 0),
-    weight       NUMERIC(10,2)   CHECK (weight >= 0),
+    weight       INTEGER         CHECK (weight >= 0),
     description  TEXT,
     nutrition    TEXT,
     available    BOOLEAN         NOT NULL DEFAULT TRUE,
     created_at   TIMESTAMP       NOT NULL DEFAULT NOW(),
     updated_at   TIMESTAMP       NOT NULL DEFAULT NOW()
 );
+
 
 
 

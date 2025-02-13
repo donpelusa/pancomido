@@ -1,5 +1,5 @@
 // src/components/admin/EditarCatalogo.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Switch, Modal } from "antd";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
@@ -408,6 +408,7 @@ export const EditarCatalogo = () => {
   return (
     <div className="flex min-h-screen">
       <main className="flex-1 p-4">
+        {/* Sección de acciones, botones, etc. */}
         <div className="mb-4">
           <Button
             type="primary"
@@ -433,84 +434,89 @@ export const EditarCatalogo = () => {
             Eliminar Seleccionados
           </Button>
         </div>
-        {products.map((product) => {
-          const tempStock = stockEdits[product.id];
-          const stockInputValue =
-            tempStock !== undefined ? tempStock : product.stock;
-          return (
-            <div key={product.id} className="flex items-start mb-4">
-              <div className="w-[100px] h-[100px] bg-gray-400 mr-4 flex items-center justify-center">
-                {product.url_img ? (
-                  <img
-                    src={product.url_img}
-                    alt={product.name}
-                    className="w-full h-full object-cover rounded"
-                  />
-                ) : (
-                  "Imagen"
-                )}
-              </div>
-              <div className="mr-8">
-                <strong>{product.name}</strong>
-                <p>Stock actual: {product.stock} unidades</p>
-                <div className="mb-2 flex items-center gap-2">
-                  <label className="mr-2">Modificar stock:</label>
-                  <input
-                    type="text"
-                    className="w-16 text-right appearance-none border border-gray-300 rounded px-1"
-                    value={stockInputValue}
-                    onChange={(e) =>
-                      setStockEdits((prev) => ({
-                        ...prev,
-                        [product.id]: e.target.value.replace(/\D/g, ""),
-                      }))
-                    }
-                  />
+
+        {/* Contenedor de la lista de productos con scroll */}
+        <div className="max-h-[calc(100vh-200px)] max-w-4xl overflow-y-auto p-8">
+          {products.map((product) => {
+            const tempStock = stockEdits[product.id];
+            const stockInputValue =
+              tempStock !== undefined ? tempStock : product.stock;
+            return (
+              <div key={product.id} className="flex items-start mb-4">
+                <div className="w-[100px] h-[100px] bg-gray-400 mr-4 flex items-center justify-center">
+                  {product.url_img ? (
+                    <img
+                      src={product.url_img}
+                      alt={product.name}
+                      className="w-full h-full object-cover rounded"
+                    />
+                  ) : (
+                    "Imagen"
+                  )}
+                </div>
+                <div className="mr-8">
+                  <strong>{product.name}</strong>
+                  <p>Stock actual: {product.stock} unidades</p>
+                  <div className="mb-2 flex items-center gap-2">
+                    <label className="mr-2">Modificar stock:</label>
+                    <input
+                      type="text"
+                      className="w-16 text-right appearance-none border border-gray-300 rounded px-1"
+                      value={stockInputValue}
+                      onChange={(e) =>
+                        setStockEdits((prev) => ({
+                          ...prev,
+                          [product.id]: e.target.value.replace(/\D/g, ""),
+                        }))
+                      }
+                    />
+                    <Button
+                      className="ml-2"
+                      type="default"
+                      onClick={() => handleSaveStock(product.id)}
+                      disabled={loadingStock[product.id]}
+                    >
+                      Guardar
+                    </Button>
+                  </div>
                   <Button
-                    className="ml-2"
-                    type="default"
-                    onClick={() => handleSaveStock(product.id)}
-                    disabled={loadingStock[product.id]}
+                    type="link"
+                    className="p-0"
+                    onClick={() => openModalForEdit(product)}
+                    disabled={isDeletingSelected || isModalSubmitting}
                   >
-                    Guardar
+                    Editar datos producto
                   </Button>
                 </div>
-                <Button
-                  type="link"
-                  className="p-0"
-                  onClick={() => openModalForEdit(product)}
-                  disabled={isDeletingSelected || isModalSubmitting}
-                >
-                  Editar datos producto
-                </Button>
-              </div>
-              <div className="mr-4">
-                <div className="mb-2">
-                  <span className="mr-1">Disponible:</span>
-                  <Switch
-                    checked={product.isAvailable}
-                    onChange={(checked) =>
-                      handleToggleAvailability(product.id, checked)
-                    }
-                  />
+                <div className="mr-4">
+                  <div className="mb-2">
+                    <span className="mr-1">Disponible:</span>
+                    <Switch
+                      checked={product.isAvailable}
+                      onChange={(checked) =>
+                        handleToggleAvailability(product.id, checked)
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="mt-1">
+                  <label>
+                    <input
+                      type="checkbox"
+                      className="mr-1"
+                      checked={product.selectedForDeletion}
+                      onChange={(e) =>
+                        handleSelectForDeletion(product.id, e.target.checked)
+                      }
+                    />
+                    Eliminar
+                  </label>
                 </div>
               </div>
-              <div className="mt-1">
-                <label>
-                  <input
-                    type="checkbox"
-                    className="mr-1"
-                    checked={product.selectedForDeletion}
-                    onChange={(e) =>
-                      handleSelectForDeletion(product.id, e.target.checked)
-                    }
-                  />
-                  Eliminar
-                </label>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        {/* Formulario para agregar/editar producto */}
         <ProductForm
           modalTitle={modalTitle}
           isModalOpen={isModalOpen}

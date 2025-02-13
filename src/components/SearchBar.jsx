@@ -1,11 +1,10 @@
 // src/components/SearchBar.jsx
-
 import { useState, useEffect, useRef } from "react";
-import { useProducts } from "../hooks/useProducts";
+import { useProducts } from "../hooks/useProducts"; // Obtiene productos desde la API del sitio
 import { useNavigate, useLocation } from "react-router-dom";
 
 export const HeaderSearch = () => {
-  const { products } = useProducts();
+  const { products } = useProducts(); // Los productos vienen desde el backend
   const navigate = useNavigate();
   const location = useLocation();
   const [searchValue, setSearchValue] = useState("");
@@ -17,27 +16,28 @@ export const HeaderSearch = () => {
   const containerRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Resetea la barra de búsqueda cada vez que cambie la ubicación (navegación)
+  // Resetea la barra de búsqueda cada vez que cambie la ubicación
   useEffect(() => {
     setSearchValue("");
     setShowSuggestions(false);
     setSearchPlaceholder("🔎 Buscar productos...");
   }, [location]);
 
-  // Actualiza las sugerencias dinámicamente en función del searchValue
+  // Actualiza las sugerencias en base al valor de búsqueda
   useEffect(() => {
     if (searchValue.trim() === "") {
       setSuggestions([]);
     } else {
       const lowerQuery = searchValue.toLowerCase();
+      // Filtra usando la propiedad 'product' ya que es el nombre del producto en la BD
       const filtered = products.filter((product) =>
-        product.title.toLowerCase().includes(lowerQuery)
+        product.product.toLowerCase().includes(lowerQuery)
       );
       setSuggestions(filtered);
     }
   }, [searchValue, products]);
 
-  // Maneja la navegación al hacer click en una sugerencia
+  // Navega a la página de detalle del producto
   const handleSuggestionClick = (productId) => {
     navigate(`/product/${productId}`);
     setSearchValue("");
@@ -45,18 +45,17 @@ export const HeaderSearch = () => {
     setSearchPlaceholder("🔎 Buscar productos...");
   };
 
-  // Navega al catálogo filtrado según el query
+  // Navega a la vista de catálogo aplicando el parámetro de búsqueda
   const handleViewCatalog = () => {
     navigate(`/catalog?search=${encodeURIComponent(searchValue)}`);
     setShowSuggestions(false);
   };
 
-  // Manejamos la tecla Enter para disparar el filtrado y quitar el foco del input
+  // Al presionar Enter se navega al catálogo
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleViewCatalog();
-      // Quita el foco del input para que desaparezca el cursor
       if (inputRef.current) {
         inputRef.current.blur();
       }
@@ -109,7 +108,7 @@ export const HeaderSearch = () => {
                 onMouseDown={() => handleSuggestionClick(product.id)}
                 className="cursor-pointer p-2 hover:bg-[#F5E1A4] border-b border-gray-300 last:border-0 truncate whitespace-nowrap overflow-hidden"
               >
-                {product.title}
+                {product.product}
               </li>
             ))}
             <li

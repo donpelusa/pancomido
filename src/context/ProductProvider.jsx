@@ -1,14 +1,14 @@
 // src/context/ProductProvider.jsx
 
 import { createContext, useState, useEffect } from "react";
-import { getProducts } from "../helpers/fakeStoreAPI"; // Importar la API de productos
+import { getProducts } from "../helpers/getProductData.helper"; // Importar la API de productos
 
 export const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
 
-  // Cargar productos desde Fake Store API
+  // Cargar productos
   useEffect(() => {
     const fetchProducts = async () => {
       try {
