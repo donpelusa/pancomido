@@ -2,8 +2,8 @@
 
 import { LoginForm } from "../components/LoginForm";
 import { Link } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
-import { FaFacebook, FaApple } from "react-icons/fa";
+// import { FcGoogle } from "react-icons/fc";
+// import { FaFacebook, FaApple } from "react-icons/fa";
 import promoData from "../data/promo.json";
 
 export const LoginPage = () => {
@@ -45,7 +45,7 @@ export const LoginPage = () => {
                 Inicia Sesión
               </h1>
               {/* Botones de acceso rápido */}
-              <div className="mt-4 flex flex-col lg:flex-row items-center justify-between gap-2">
+              {/* <div className="mt-4 flex flex-col lg:flex-row items-center justify-between gap-2">
                 <button
                   type="button"
                   className="w-full flex justify-center items-center gap-2 bg-white text-sm text-gray-600 p-2 rounded-md 
@@ -79,7 +79,7 @@ export const LoginPage = () => {
 
               <div className="mt-4 text-sm text-gray-600 text-center">
                 <p>o con tu correo</p>
-              </div>
+              </div> */}
 
               <LoginForm />
 
@@ -91,15 +91,6 @@ export const LoginPage = () => {
                     className="text-black hover:underline"
                   >
                     Regístrate Aquí
-                  </Link>
-                </p>
-                <p>
-                  ¿Olvidaste tu clave?{" "}
-                  <Link
-                    to="/auth/reset-password"
-                    className="text-black hover:underline"
-                  >
-                    Resetéala Aquí
                   </Link>
                 </p>
               </div>

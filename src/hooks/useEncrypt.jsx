@@ -1,4 +1,4 @@
-// src/hooks/useEncrypt.jsx
+// // src/hooks/useEncrypt.jsx
 
 import CryptoJs from "crypto-js";
 import { useState } from "react";
@@ -10,10 +10,9 @@ export const useEncrypt = () => {
 
   const handleEncrypt = (data) => {
     const encryptedData = CryptoJs.AES.encrypt(
-      JSON.stringify(data),
+      data,
       String(VITE_CRYPTOJS_SECRET)
     ).toString();
-
     setEncrypted(encryptedData);
   };
 
@@ -22,7 +21,6 @@ export const useEncrypt = () => {
       encryptedData,
       String(VITE_CRYPTOJS_SECRET)
     ).toString(CryptoJs.enc.Utf8);
-
     setDecrypted(decryptedData);
   };
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export const CheckoutPage = () => {
   const { cart } = useCart();
@@ -39,6 +40,16 @@ export const CheckoutPage = () => {
 
   const handleRealizarCompra = async (e) => {
     e.preventDefault();
+    // Validar que el usuario tenga RUT
+    if (!session?.rut) {
+      toast.error("Debes actualizar tus datos (RUT) para realizar la compra", {
+        position: "bottom-right",
+        autoClose: 3000,
+        theme: "dark",
+      });
+      return;
+    }
+
     const payload = {
       id_address: selectedAddress,
       order_delivery_date: "2025-03-01", // O generar dinámicamente la fecha

@@ -1,31 +1,24 @@
 // src/pages/ProductPage.jsx
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
+import { formatCLP } from "../helpers/formatPrice.helper";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Función para formatear precios en CLP
-const formatCLP = (value) =>
-  new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    maximumFractionDigits: 0,
-  }).format(value);
 
 export const ProductPage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  // Estado para la imagen principal y las miniaturas (se mantienen en el orden original)
-  const [mainImage, setMainImage] = useState("");
-  const [thumbnails, setThumbnails] = useState([]);
+  // Usamos un estado único para el arreglo de imágenes
+  const [imageArray, setImageArray] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const { addToCart } = useCart();
   const { session } = useAuth();
 
-  // Se obtiene el detalle del producto desde el backend
+  // Cargar el detalle del producto
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
@@ -37,17 +30,13 @@ export const ProductPage = () => {
         }
         const data = await response.json();
         setProduct(data);
-        // La imagen principal será la primera de las imágenes (si existen)
+        // Asumimos que data.images es un arreglo de objetos y usamos todos
         if (data.images && data.images.length > 0) {
-          setMainImage(data.images[0]);
-          // Clonamos el arreglo para las miniaturas
-          setThumbnails([...data.images]);
+          setImageArray(data.images);
         } else {
-          // Si no hay imágenes, se puede usar un placeholder o algún campo alternativo
-          setMainImage("");
-          setThumbnails([]);
+          setImageArray([]);
         }
-        // Guardamos los productos relacionados (si los hay) y seleccionamos 4 al azar
+        // Cargar productos relacionados (4 al azar)
         if (data.related && data.related.length > 0) {
           const shuffled = data.related.sort(() => 0.5 - Math.random());
           setRelatedProducts(shuffled.slice(0, 4));
@@ -63,6 +52,11 @@ export const ProductPage = () => {
 
   if (!product)
     return <p className="text-center mt-10">Cargando producto...</p>;
+
+  // La imagen principal es la primera del arreglo
+  const mainImage = imageArray[0];
+  // Las miniaturas son el resto (solo se muestran hasta 3)
+  const thumbnails = imageArray.slice(1, 4);
 
   // Manejo de cambio de cantidad, validando que no supere el stock disponible
   const handleQuantityChange = (newQuantity) => {
@@ -98,12 +92,12 @@ export const ProductPage = () => {
 
   // Función para intercambiar la imagen principal con una miniatura
   const handleThumbnailClick = (index) => {
-    // Se realiza un swap entre la imagen principal y la miniatura clickeada
-    const newThumbnails = [...thumbnails];
-    const temp = mainImage;
-    newThumbnails[index] = temp;
-    setMainImage(thumbnails[index]);
-    setThumbnails(newThumbnails);
+    // index corresponde a la posición dentro de thumbnails, pero en imageArray es index+1
+    const newArray = [...imageArray];
+    const temp = newArray[0];
+    newArray[0] = newArray[index + 1];
+    newArray[index + 1] = temp;
+    setImageArray(newArray);
   };
 
   return (
@@ -213,7 +207,9 @@ export const ProductPage = () => {
         {/* Descripción del producto: usamos el campo description de la API */}
         <div>
           <h2 className="text-xl font-bold">Descripción del producto</h2>
-          <p className="text-gray-600 mt-2">{product.description}</p>
+          <p className="text-gray-600 mt-2 whitespace-pre-wrap">
+            {product.description}
+          </p>
         </div>
 
         {/* Información Nutricional: mostramos el campo nutrition */}
@@ -232,25 +228,50 @@ export const ProductPage = () => {
       {relatedProducts.length > 0 && (
         <div className="mt-12">
           <h2 className="text-xl font-bold">Productos similares</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            {relatedProducts.map((relProd) => (
-              <Link
-                key={relProd.id}
-                to={`/product/${relProd.id}`}
-                className="p-4 block hover:bg-gray-100 transition rounded-2xl"
-              >
-                <div className="bg-white w-full h-40 flex items-center justify-center border border-black p-2 rounded-2xl">
-                  <img
-                    src={relProd.url_img}
-                    alt={relProd.product}
-                    className="h-full object-contain"
-                  />
-                </div>
-                <p className="mt-2 font-semibold text-center">
-                  {relProd.product}
-                </p>
-              </Link>
-            ))}
+          <div className="grid grid-cols-4 gap-4 mt-4">
+            {relatedProducts.map((item) => {
+              // Si existe url_img, se usa directamente. De lo contrario, se intenta extraer
+              // la imagen desde el arreglo de imágenes, tal como se hace en Favoritos.
+              const mainImage =
+                item.url_img ||
+                (item.images && item.images.length > 0
+                  ? typeof item.images[0] === "string"
+                    ? item.images[0]
+                    : item.images[0].secure_url ||
+                      item.images[0].url ||
+                      item.images[0].url_img ||
+                      ""
+                  : "");
+
+              return (
+                <Link
+                  key={item.id}
+                  to={`/product/${item.id}`}
+                  className="relative rounded-md overflow-hidden group aspect-square"
+                >
+                  {/* Tarjeta de imagen */}
+                  <div className="w-full h-full">
+                    {mainImage ? (
+                      <img
+                        src={mainImage}
+                        alt={item.product}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                        Sin imagen
+                      </div>
+                    )}
+                  </div>
+                  {/* Contenedor semitransparente con el nombre del producto */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-1">
+                    <p className="text-white text-semibold text-center truncate">
+                      {item.product}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

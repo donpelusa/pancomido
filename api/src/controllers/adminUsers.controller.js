@@ -10,9 +10,13 @@ const schema = process.env.DB_SCHEMA;
 // Listar todos los usuarios
 const listUsers = async (req, res, next) => {
     try {
-        const query = `SELECT id, rut, name, mail
-            FROM ${schema}.users
-            ORDER BY created_at DESC`;
+        const query = `
+        SELECT u.id, u.name, u.lastname, u.mail, u.phone, u.disabled,
+               r.role as role
+        FROM ${schema}.users u
+        LEFT JOIN ${schema}.roles r ON u.role_id = r.id
+        ORDER BY u.created_at DESC
+      `;
         const { rows } = await db.query(query);
         res.json(rows);
     } catch (err) {

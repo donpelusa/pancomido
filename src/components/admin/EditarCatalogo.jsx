@@ -1,6 +1,6 @@
-// src/components/admin/EditarCatalogo.jsx
+// frontend/src/components/admin/EditarCatalogo.jsx
 import { useState, useEffect } from "react";
-import { Button, Switch, Modal } from "antd";
+import { Button, Switch, Modal, Spin } from "antd";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
 import ProductForm from "./ProductForm";
@@ -31,8 +31,8 @@ export const EditarCatalogo = () => {
     categories: [],
     isAvailable: false,
   });
+  const [loading, setLoading] = useState(false);
 
-  // Usamos el hook para manejo de imágenes (4 slots)
   const {
     productImages,
     setProductImages,
@@ -42,28 +42,31 @@ export const EditarCatalogo = () => {
     handleDeleteImage,
   } = useProductImages(API_URL, session, editingProductId);
 
-  // Función para cargar productos desde el endpoint GET /admin/products
-  const fetchProducts = () => {
-    fetch(`${API_URL}/api/admin/products`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const mapped = data.map((prod) => ({
-          ...prod,
-          name: prod.product, // renombramos para la UI
-          isAvailable: prod.available,
-          selectedForDeletion: false,
-        }));
-        setProducts(mapped);
-      })
-      .catch((err) => {
-        console.error("Error fetching products:", err);
-        toast.error(err.message, { position: "bottom-right" });
+  // Función para cargar productos desde el endpoint GET /api/admin/products
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/products`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.token}`,
+        },
       });
+      if (!res.ok) throw new Error("Error al obtener productos");
+      const data = await res.json();
+      const mapped = data.map((prod) => ({
+        ...prod,
+        name: prod.product, // renombramos para la UI
+        isAvailable: prod.available,
+        selectedForDeletion: false,
+      }));
+      setProducts(mapped);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error(error.message, { position: "bottom-right" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Función para cargar categorías desde el endpoint GET /api/categories
@@ -89,7 +92,7 @@ export const EditarCatalogo = () => {
     }
   }, [API_URL, session]);
 
-  // Abre el modal para agregar un producto nuevo
+  // Abrir modal para agregar un producto nuevo
   const openModalForAdd = () => {
     setModalTitle("Agregar nuevo");
     setEditingProductId(null);
@@ -109,7 +112,7 @@ export const EditarCatalogo = () => {
     setIsModalOpen(true);
   };
 
-  // Abre el modal para editar un producto existente
+  // Abrir modal para editar un producto existente
   const openModalForEdit = (product) => {
     setModalTitle("Editando producto");
     setEditingProductId(product.id);
@@ -124,7 +127,6 @@ export const EditarCatalogo = () => {
       categories: product.categories || [],
       isAvailable: product.isAvailable,
     });
-    // Se espera que product.images contenga un arreglo con hasta 4 objetos { secure_url }
     setProductImages(
       product.images && product.images.length
         ? product.images
@@ -154,8 +156,7 @@ export const EditarCatalogo = () => {
     return errors;
   };
 
-  // Función handleSaveModal: maneja la creación o edición del producto,
-  // incluyendo la subida de imágenes para productos nuevos.
+  // Función para guardar (crear o editar) el producto
   const handleSaveModal = async () => {
     const errors = validateForm();
     setFormErrors(errors);
@@ -177,12 +178,12 @@ export const EditarCatalogo = () => {
       weight: Number(formData.weight),
       categories: formData.categories,
       available: formData.isAvailable,
-      images: [], // se completará luego
+      images: [],
     };
     try {
       let response, data, productId;
       if (!editingProductId) {
-        // CREAR PRODUCTO SIN IMÁGENES (primero crear el producto)
+        // Crear producto sin imágenes (se crean luego)
         response = await fetch(`${API_URL}/api/admin/products`, {
           method: "POST",
           headers: {
@@ -196,7 +197,7 @@ export const EditarCatalogo = () => {
           throw new Error(data.error || "Error al agregar producto");
         }
         productId = data.id;
-        // Para cada slot que tenga un objeto File (nuevo), subirlo usando el ID recién creado
+        // Subir imágenes para cada slot si es un File
         const uploadedImages = [];
         for (let i = 0; i < productImages.length; i++) {
           const slotImage = productImages[i];
@@ -223,7 +224,7 @@ export const EditarCatalogo = () => {
             uploadedImages[i] = slotImage;
           }
         }
-        // Asegurar que exista al menos imagen principal en el slot 0
+        // Aseguramos que haya una imagen principal en el slot 0
         if (
           !uploadedImages[0] &&
           uploadedImages.filter((img) => img !== null).length === 1
@@ -231,7 +232,7 @@ export const EditarCatalogo = () => {
           const firstImg = uploadedImages.find((img) => img !== null);
           uploadedImages[0] = firstImg;
         }
-        // Actualizar la información de imágenes en la BD usando el endpoint POST /product-images/save-images
+        // Guardar las imágenes en la BD
         const imagesPayload = {
           productId,
           images: uploadedImages.filter((img) => img !== null),
@@ -255,7 +256,7 @@ export const EditarCatalogo = () => {
           position: "bottom-right",
         });
       } else {
-        // EDICIÓN: Se envía el payload con las imágenes actuales (ya sean subidas o File convertidos previamente)
+        // Editar producto existente
         response = await fetch(
           `${API_URL}/api/admin/products/${editingProductId}`,
           {
@@ -288,7 +289,7 @@ export const EditarCatalogo = () => {
     }
   };
 
-  // Actualizar stock (PUT /admin/products/{id}/stock)
+  // Actualizar stock
   const handleSaveStock = async (id) => {
     const newStockValue = stockEdits[id];
     if (newStockValue !== undefined) {
@@ -320,7 +321,7 @@ export const EditarCatalogo = () => {
     }
   };
 
-  // Actualizar disponibilidad (PUT /admin/products/{id})
+  // Actualizar disponibilidad
   const handleToggleAvailability = (id, checked) => {
     const product = products.find((p) => p.id === id);
     fetch(`${API_URL}/api/admin/products/${id}`, {
@@ -357,12 +358,14 @@ export const EditarCatalogo = () => {
     );
   };
 
-  // Eliminar productos seleccionados (DELETE /admin/products)
+  // Eliminar productos seleccionados
   const handleDeleteSelected = () => {
     const selectedIds = products
       .filter((p) => p.selectedForDeletion)
       .map((p) => p.id);
-    if (selectedIds.length === 0) return;
+    if (!Array.isArray(selectedIds) || selectedIds.length === 0) {
+      return;
+    }
     setIsDeletingSelected(true);
     Modal.confirm({
       title: "¿Estás seguro?",
@@ -408,7 +411,7 @@ export const EditarCatalogo = () => {
   return (
     <div className="flex min-h-screen">
       <main className="flex-1 p-4">
-        {/* Sección de acciones, botones, etc. */}
+        {/* Sección de acciones */}
         <div className="mb-4">
           <Button
             type="primary"
@@ -434,89 +437,97 @@ export const EditarCatalogo = () => {
             Eliminar Seleccionados
           </Button>
         </div>
-
-        {/* Contenedor de la lista de productos con scroll */}
-        <div className="max-h-[calc(100vh-200px)] max-w-4xl overflow-y-auto p-8">
-          {products.map((product) => {
-            const tempStock = stockEdits[product.id];
-            const stockInputValue =
-              tempStock !== undefined ? tempStock : product.stock;
-            return (
-              <div key={product.id} className="flex items-start mb-4">
-                <div className="w-[100px] h-[100px] bg-gray-400 mr-4 flex items-center justify-center">
-                  {product.url_img ? (
-                    <img
-                      src={product.url_img}
-                      alt={product.name}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  ) : (
-                    "Imagen"
-                  )}
-                </div>
-                <div className="mr-8">
-                  <strong>{product.name}</strong>
-                  <p>Stock actual: {product.stock} unidades</p>
-                  <div className="mb-2 flex items-center gap-2">
-                    <label className="mr-2">Modificar stock:</label>
-                    <input
-                      type="text"
-                      className="w-16 text-right appearance-none border border-gray-300 rounded px-1"
-                      value={stockInputValue}
-                      onChange={(e) =>
-                        setStockEdits((prev) => ({
-                          ...prev,
-                          [product.id]: e.target.value.replace(/\D/g, ""),
-                        }))
-                      }
-                    />
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <Spin tip="Cargando productos de la tienda...">
+              <div style={{ width: "350px", height: "150px" }} />
+            </Spin>
+          </div>
+        ) : (
+          <div className="max-h-[calc(100vh-200px)] max-w-4xl overflow-y-auto p-8">
+            {products.map((product) => {
+              const tempStock = stockEdits[product.id];
+              const stockInputValue =
+                tempStock !== undefined ? tempStock : product.stock;
+              return (
+                <div key={product.id} className="flex items-start mb-4">
+                  <div className="w-[100px] h-[100px] bg-gray-400 mr-4 flex items-center justify-center">
+                    {product.url_img ? (
+                      <img
+                        src={product.url_img}
+                        alt={product.name}
+                        className="w-full h-full object-cover rounded"
+                      />
+                    ) : (
+                      "Imagen"
+                    )}
+                  </div>
+                  <div className="mr-8">
+                    <strong>{product.name}</strong>
+                    <p>Stock actual: {product.stock} unidades</p>
+                    <div className="mb-2 flex items-center gap-2">
+                      <label className="mr-2">Modificar stock:</label>
+                      <input
+                        type="text"
+                        className="w-16 text-right appearance-none border border-gray-300 rounded px-1"
+                        value={stockInputValue}
+                        onChange={(e) =>
+                          setStockEdits((prev) => ({
+                            ...prev,
+                            [product.id]: e.target.value.replace(/\D/g, ""),
+                          }))
+                        }
+                      />
+                      <Button
+                        className="ml-2"
+                        type="default"
+                        onClick={() => handleSaveStock(product.id)}
+                        disabled={loadingStock[product.id]}
+                      >
+                        Guardar
+                      </Button>
+                    </div>
                     <Button
-                      className="ml-2"
-                      type="default"
-                      onClick={() => handleSaveStock(product.id)}
-                      disabled={loadingStock[product.id]}
+                      type="link"
+                      className="p-0"
+                      onClick={() => openModalForEdit(product)}
+                      disabled={isDeletingSelected || isModalSubmitting}
                     >
-                      Guardar
+                      Editar datos producto
                     </Button>
                   </div>
-                  <Button
-                    type="link"
-                    className="p-0"
-                    onClick={() => openModalForEdit(product)}
-                    disabled={isDeletingSelected || isModalSubmitting}
-                  >
-                    Editar datos producto
-                  </Button>
-                </div>
-                <div className="mr-4">
-                  <div className="mb-2">
-                    <span className="mr-1">Disponible:</span>
-                    <Switch
-                      checked={product.isAvailable}
-                      onChange={(checked) =>
-                        handleToggleAvailability(product.id, checked)
-                      }
-                    />
+                  <div className="mr-4">
+                    <div className="mb-2">
+                      <span className="mr-1">Disponible:</span>
+                      <Switch
+                        checked={product.isAvailable}
+                        onChange={(checked) =>
+                          handleToggleAvailability(product.id, checked)
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <label>
+                      <input
+                        type="checkbox"
+                        className="mr-1"
+                        checked={product.selectedForDeletion}
+                        onChange={(e) =>
+                          handleSelectForDeletion(product.id, e.target.checked)
+                        }
+                      />
+                      Eliminar
+                    </label>
                   </div>
                 </div>
-                <div className="mt-1">
-                  <label>
-                    <input
-                      type="checkbox"
-                      className="mr-1"
-                      checked={product.selectedForDeletion}
-                      onChange={(e) =>
-                        handleSelectForDeletion(product.id, e.target.checked)
-                      }
-                    />
-                    Eliminar
-                  </label>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {/* Formulario para agregar/editar producto */}
+              );
+            })}
+          </div>
+        )}
+      </main>
+      {/* Renderizamos el ProductForm (Modal) cuando isModalOpen es true */}
+      {isModalOpen && (
         <ProductForm
           modalTitle={modalTitle}
           isModalOpen={isModalOpen}
@@ -533,7 +544,7 @@ export const EditarCatalogo = () => {
           onCancel={handleCancelModal}
           onSave={handleSaveModal}
         />
-      </main>
+      )}
     </div>
   );
 };

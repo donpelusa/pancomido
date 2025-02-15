@@ -21,8 +21,19 @@ const createAddress = async (addressData) => {
 
 const getMainAddress = async (id_user) => {
   const query = `
-    SELECT * FROM ${schema}.address
-    WHERE id_user = $1 AND main = true
+    SELECT 
+      a.*,
+      c.city AS city,
+      c.id AS cityId,
+      p.province AS province,
+      p.id AS provinceId,
+      r.region AS region,
+      r.id AS regionId
+    FROM ${schema}.address a
+    JOIN ${schema}.cities c ON a.id_city = c.id
+    JOIN ${schema}.provinces p ON c.id_province = p.id
+    JOIN ${schema}.regions r ON p.id_region = r.id
+    WHERE a.id_user = $1 AND a.main = true
     LIMIT 1
   `;
   const { rows } = await db.query(query, [id_user]);
@@ -31,9 +42,20 @@ const getMainAddress = async (id_user) => {
 
 const getAddresses = async (id_user) => {
   const query = `
-    SELECT * FROM ${schema}.address
-    WHERE id_user = $1
-    ORDER BY created_at DESC
+    SELECT 
+      a.*,
+      c.city AS city,
+      c.id AS cityId,
+      p.province AS province,
+      p.id AS provinceId,
+      r.region AS region,
+      r.id AS regionId
+    FROM ${schema}.address a
+    JOIN ${schema}.cities c ON a.id_city = c.id
+    JOIN ${schema}.provinces p ON c.id_province = p.id
+    JOIN ${schema}.regions r ON p.id_region = r.id
+    WHERE a.id_user = $1
+    ORDER BY a.created_at DESC
   `;
   const { rows } = await db.query(query, [id_user]);
   return rows;
@@ -41,8 +63,19 @@ const getAddresses = async (id_user) => {
 
 const getAddressById = async (id, id_user) => {
   const query = `
-    SELECT * FROM ${schema}.address
-    WHERE id = $1 AND id_user = $2
+    SELECT 
+      a.*,
+      c.city AS city,
+      c.id AS cityId,
+      p.province AS province,
+      p.id AS provinceId,
+      r.region AS region,
+      r.id AS regionId
+    FROM ${schema}.address a
+    JOIN ${schema}.cities c ON a.id_city = c.id
+    JOIN ${schema}.provinces p ON c.id_province = p.id
+    JOIN ${schema}.regions r ON p.id_region = r.id
+    WHERE a.id = $1 AND a.id_user = $2
   `;
   const { rows } = await db.query(query, [id, id_user]);
   return rows[0];
@@ -63,7 +96,7 @@ const updateAddress = async (addressId, id_user, addressData) => {
     addressData.id_city,
     addressData.address,
     addressData.postal_code || null,
-    addressData.main || false,
+    addressData.main,
     addressId,
     id_user,
   ];
@@ -81,8 +114,6 @@ const deleteAddress = async (addressId, id_user) => {
   return rows[0];
 };
 
-// Función para desactivar la marca principal en todas las direcciones de un usuario,
-// opcionalmente excluyendo una dirección (por ejemplo, la que se está actualizando)
 const unsetMainForOtherAddresses = async (id_user, excludeAddressId = null) => {
   let query, values;
   if (excludeAddressId) {
@@ -107,8 +138,8 @@ module.exports = {
   createAddress,
   getMainAddress,
   getAddresses,
+  getAddressById,
   updateAddress,
   deleteAddress,
   unsetMainForOtherAddresses,
-  getAddressById,
 };

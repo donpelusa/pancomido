@@ -4,7 +4,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Categories } from "../components/Categories";
 import { useProducts } from "../hooks/useProducts";
 import { FaHeart, FaTimes } from "react-icons/fa";
-import { Dropdown, Menu, Button } from "antd";
+import { Dropdown, Button, Spin } from "antd";
+import { useFavorites } from "../hooks/useFavorites";
+import { useAuth } from "../hooks/useAuth";
 
 export const CatalogPage = () => {
   const location = useLocation();
@@ -17,6 +19,10 @@ export const CatalogPage = () => {
   // Para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
+  // Se obtienen los favoritos y la función para agregar/quitar de favoritos
+  const { session } = useAuth();
+  const { favorites, toggleFavorite } = useFavorites();
 
   // Lógica de ordenamiento (se realiza en el frontend sobre los datos ya filtrados)
   useEffect(() => {
@@ -47,17 +53,16 @@ export const CatalogPage = () => {
     setCurrentPage(1);
   };
 
-  const menu = (
-    <Menu
-      onClick={handleMenuClick}
-      items={[
-        { key: "a-z", label: "Ordenar de A a Z" },
-        { key: "z-a", label: "Ordenar de Z a A" },
-        { key: "max-min", label: "Ordenar de Mayor a Menor $" },
-        { key: "min-max", label: "Ordenar de Menor a Mayor $" },
-      ]}
-    />
-  );
+  // Usamos la nueva API de Dropdown: definimos menuProps
+  const menuProps = {
+    items: [
+      { key: "a-z", label: "Ordenar de A a Z" },
+      { key: "z-a", label: "Ordenar de Z a A" },
+      { key: "max-min", label: "Ordenar de Mayor a Menor $" },
+      { key: "min-max", label: "Ordenar de Menor a Mayor $" },
+    ],
+    onClick: handleMenuClick,
+  };
 
   const totalPages = Math.ceil(orderedProducts.length / itemsPerPage);
   const displayedProducts = orderedProducts.slice(
@@ -94,10 +99,7 @@ export const CatalogPage = () => {
   return (
     <div className="container mx-auto px-4 py-4">
       <h2 className="text-3xl font-semibold">Catálogo de Productos</h2>
-      {/* Muestra las categorías */}
       <Categories />
-
-      {/* Resultados y Filtros */}
       <div className="flex justify-between items-center my-4">
         <div className="flex items-center gap-4">
           <div
@@ -114,7 +116,7 @@ export const CatalogPage = () => {
           </div>
           {activeFilterTag}
         </div>
-        <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+        <Dropdown menu={menuProps} placement="bottomRight" trigger={["click"]}>
           <Button
             style={{
               backgroundColor: "#fff2d2",
@@ -129,34 +131,56 @@ export const CatalogPage = () => {
           </Button>
         </Dropdown>
       </div>
-
-      {/* Grilla de Productos */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {loading ? (
-          <p>Cargando productos...</p>
+          <div className="col-span-full flex justify-center items-center">
+            <Spin tip="Cargando productos de la tienda...">
+              <div style={{ width: "350px", height: "150px" }} />
+            </Spin>
+          </div>
         ) : (
-          displayedProducts.map((product) => (
-            <Link
-              key={product.id}
-              to={`/product/${product.id}`}
-              className="p-4 relative block hover:bg-gray-100 transition duration-200 rounded-2xl"
-            >
-              <FaHeart className="absolute top-2 right-2 text-black cursor-pointer" />
-              <div className="bg-white w-full h-68 flex items-center justify-center border border-black p-4 rounded-2xl">
-                <img
-                  src={product.url_img}
-                  alt={product.product}
-                  className="h-full object-contain"
-                />
-              </div>
-              <p className="mt-2 font-semibold">{product.product}</p>
-              <p className="text-gray-600">${product.price}</p>
-            </Link>
-          ))
+          displayedProducts.map((product) => {
+            const isFavorite = favorites.some((fav) => fav.id === product.id);
+            return (
+              <Link
+                key={product.id}
+                to={`/product/${product.id}`}
+                className="p-4 block hover:bg-gray-100 transition duration-200 rounded-2xl"
+              >
+                <div className="relative bg-white w-full h-68 flex items-center justify-center border-10 border-white rounded-2xl">
+                  {/* Ícono de favoritos, solo si hay sesión */}
+                  {session?.token && (
+                    <div
+                      className="absolute top-4 right-4 z-10 cursor-pointer active:scale-90 transition-transform"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                      style={{
+                        transform: "scale(1.3)",
+                        filter: "drop-shadow(0 0 2px rgba(0,0,0,0.4))",
+                      }}
+                    >
+                      <FaHeart
+                        className={isFavorite ? "text-red-500" : "text-white"}
+                      />
+                    </div>
+                  )}
+                  <div
+                    className="w-full h-full rounded-2xl bg-center bg-no-repeat bg-cover"
+                    style={{ backgroundImage: `url(${product.url_img})` }}
+                  />
+                </div>
+                <div className="flex justify-between items-center mt-2 px-4">
+                  <p className="font-semibold text-lg">{product.product}</p>
+                  <p className="text-black ml-4">${product.price}</p>
+                </div>
+              </Link>
+            );
+          })
         )}
       </div>
-
-      {/* Paginación */}
       <div className="flex justify-center mt-8 space-x-2">
         {[...Array(totalPages)].map((_, index) => (
           <button

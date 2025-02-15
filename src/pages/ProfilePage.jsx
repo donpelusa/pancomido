@@ -30,7 +30,7 @@ export const ProfilePage = () => {
     }
   }, [session, navigate]);
 
-  const isAdmin = session?.role === "admin";
+  const isAdmin = session?.role === "admin" || session?.role === "developer";
 
   const tabs = isAdmin
     ? [

@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Middleware de debug: muestra la URL y el método de cada petición
 app.use((req, res, next) => {
-    console.log(`DEBUG: Received ${req.method} request for ${req.originalUrl}`);
+    // console.log(`DEBUG: Received ${req.method} request for ${req.originalUrl}`);
     next();
 });
 

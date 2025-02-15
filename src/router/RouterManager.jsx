@@ -15,8 +15,7 @@ import { RegisterPage } from "../pages/RegisterPage";
 import { SuccessPage } from "../pages/SuccessPage";
 import { CatalogPage } from "../pages/CatalogPage";
 import { ProductPage } from "../pages/ProductPage"; // Importar ProductPage
-import { ContactPage } from "../pages/ContactPage"; // Importa la nueva página de contacto
-import { roles } from "../helpers/roles";
+import { ContactPage } from "../pages/ContactPage";
 
 export const RouterManager = () => {
   const { session } = useAuth();
@@ -31,8 +30,7 @@ export const RouterManager = () => {
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
         </Route>
-
-        {/* Rutas de Usuario con MainLayout */}
+        {/* Rutas con MainLayout */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="cart" element={<CartPage />} />
@@ -40,8 +38,7 @@ export const RouterManager = () => {
           <Route path="success" element={<SuccessPage />} />
           <Route path="catalog" element={<CatalogPage />} />
           <Route path="product/:id" element={<ProductPage />} />
-          <Route path="contact" element={<ContactPage />} />{" "}
-          {/* Nueva ruta para ContactPage */}
+          <Route path="contact" element={<ContactPage />} />
           {/* Rutas protegidas por sesión */}
           <Route
             path="profile"
@@ -52,9 +49,7 @@ export const RouterManager = () => {
             }
           />
         </Route>
-
-        {/* Rutas Exclusivas para Administrador */}
-        {session?.role === roles.admin && (
+        {(session?.role === "admin" || session?.role === "developer") && (
           <Route path="/admin" element={<MainLayout />}></Route>
         )}
       </Routes>

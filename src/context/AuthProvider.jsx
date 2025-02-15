@@ -1,9 +1,10 @@
-// src/context/AuthProvider.jsx
+// // frontend/src/context/AuthProvider.jsx
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState, useCallback } from "react";
 import { useStorage } from "../hooks/useStorage";
+import CryptoJS from "crypto-js";
+const { VITE_CRYPTOJS_SECRET } = import.meta.env;
 
-// Creamos el contexto de autenticación
 export const AuthContext = createContext();
 
 // Función para decodificar el token JWT (solo el payload)
@@ -17,12 +18,39 @@ const decodeToken = (token) => {
   }
 };
 
-export const AuthProvider = ({ children }) => {
-  const { handleSetStorageSession, handleGetStorageSession } = useStorage();
-  const [session, setSession] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+// Función para intentar restaurar la sesión de forma síncrona
+const getInitialSession = () => {
+  const storedEncrypted = localStorage.getItem("USER_SESSION");
+  if (storedEncrypted) {
+    try {
+      const decryptedData = CryptoJS.AES.decrypt(
+        storedEncrypted,
+        String(VITE_CRYPTOJS_SECRET)
+      ).toString(CryptoJS.enc.Utf8);
+      if (decryptedData) {
+        const parsedSession = JSON.parse(decryptedData);
+        if (parsedSession.token) {
+          const decoded = decodeToken(parsedSession.token);
+          return { ...parsedSession, ...decoded };
+        }
+        return parsedSession;
+      }
+    } catch (error) {
+      console.error("Error restoring session:", error);
+      return null;
+    }
+  }
+  return null;
+};
 
-  // Al guardar la sesión, decodificamos el token para extraer datos (por ejemplo, role)
+export const AuthProvider = ({ children }) => {
+  // Inicializa la sesión de forma síncrona
+  const [session, setSession] = useState(() => getInitialSession());
+  // Si ya tenemos la sesión, ya no estamos "cargando"
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { handleSetStorageSession } = useStorage();
+
   const handleSession = (newSession) => {
     if (newSession.token) {
       const decoded = decodeToken(newSession.token);
@@ -32,24 +60,10 @@ export const AuthProvider = ({ children }) => {
     handleSetStorageSession(newSession);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setSession(null);
     localStorage.removeItem("USER_SESSION");
-  };
-
-  useEffect(() => {
-    const storedSession = handleGetStorageSession();
-    if (storedSession) {
-      try {
-        const parsedSession = JSON.parse(storedSession);
-        setSession(parsedSession);
-      } catch (error) {
-        console.error("Error parsing stored session:", error);
-        setSession(null);
-      }
-    }
-    setIsLoading(false);
-  }, [handleGetStorageSession]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ session, isLoading, handleSession, logout }}>
