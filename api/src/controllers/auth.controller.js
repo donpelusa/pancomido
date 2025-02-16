@@ -9,12 +9,15 @@ const User = require('../models/User');
 // Control de registro
 const register = async (req, res, next) => {
     try {
-        console.log("Registro iniciado:", req.body);
-        const { name, lastname, mail, password } = req.body;
+        // console.log("Registro iniciado:", req.body);
+        let { name, lastname, mail, password } = req.body;
         if (!name || !lastname || !mail || !password) {
-            console.log("Faltan campos requeridos");
+            // console.log("Faltan campos requeridos");
             return res.status(400).json({ error: 'Faltan campos requeridos: name, lastname, mail y password.' });
         }
+
+        // Convertir el correo a minúsculas
+        mail = mail.toLowerCase();
 
         // console.log("Buscando usuario existente por mail:", mail);
         const existingUser = await User.findUserByMail(mail);
@@ -39,7 +42,9 @@ const register = async (req, res, next) => {
 // Control de acceso
 const login = async (req, res, next) => {
     try {
-        const { mail, password } = req.body;
+        let { mail, password } = req.body;
+        // Convertir el correo a minúsculas
+        mail = mail.toLowerCase();
         const user = await User.findUserByMail(mail);
         if (!user) {
             return res.status(401).json({ error: 'Credenciales inválidas.' });
