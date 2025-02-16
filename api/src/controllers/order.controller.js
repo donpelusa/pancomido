@@ -43,6 +43,27 @@ const createOrder = async (req, res, next) => {
     }
 };
 
+const updateOrderStatus = async (req, res, next) => {
+    try {
+        const { orderId } = req.params;
+        const { order_status_id } = req.body;
+        const query = `
+        UPDATE ${process.env.DB_SCHEMA}.orders
+        SET order_status_id = $1,
+            updated_at = NOW()
+        WHERE id = $2
+        RETURNING *
+      `;
+        const { rows } = await db.query(query, [order_status_id, orderId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Orden no encontrada" });
+        }
+        res.json(rows[0]);
+    } catch (err) {
+        next(err);
+    }
+};
+
 const getOrders = async (req, res, next) => {
     try {
         // Endpoint básico para pedidos del cliente
@@ -281,6 +302,7 @@ const confirmPurchase = async (req, res, next) => {
 
 module.exports = {
     createOrder,
+    updateOrderStatus,
     getOrders,
     getOrderById,
     getDetailedOrders,

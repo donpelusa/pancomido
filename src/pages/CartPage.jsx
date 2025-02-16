@@ -1,4 +1,4 @@
-// src/pages/CartPage.jsx
+// frontend/src/pages/CartPage.jsx
 
 import { Button, Card, List, Space, Typography, Image, Input } from "antd";
 import { useState } from "react";
@@ -59,7 +59,6 @@ export const CartPage = () => {
       <Title level={2} style={{ marginBottom: "24px", textAlign: "center" }}>
         Tu Carrito
       </Title>
-
       <Card>
         {cart.length === 0 ? (
           <Text type="secondary">Tu carrito está vacío</Text>
@@ -77,19 +76,22 @@ export const CartPage = () => {
                     gap: "2rem",
                   }}
                 >
-                  {/* Miniatura de la imagen */}
+                  {/* Se muestra la imagen principal (primera URL del arreglo 'images') */}
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <Image
                       width={100}
-                      src={item.image}
-                      alt={item.title}
-                      style={{ borderRadius: "5px" }}
+                      height={100}
+                      src={
+                        item.images && item.images.length > 0
+                          ? item.images[0]
+                          : ""
+                      }
+                      alt={item.product}
+                      className="w-full h-full object-cover rounded"
                     />
                   </div>
-
-                  {/* Información del producto */}
                   <Space direction="vertical" style={{ flex: 1 }}>
-                    <Text strong>{item.title}</Text>
+                    <Text strong>{item.product}</Text>
                     <Text>
                       Precio: ${item.price.toFixed(2)} x {item.quantity}
                     </Text>
@@ -97,8 +99,6 @@ export const CartPage = () => {
                       Total: ${(item.price * item.quantity).toFixed(2)}
                     </Text>
                   </Space>
-
-                  {/* Controles de cantidad y eliminar */}
                   <div
                     style={{
                       display: "flex",
@@ -130,7 +130,7 @@ export const CartPage = () => {
                         }
                         onBlur={(e) =>
                           handleQuantityChange(item.id, e.target.value)
-                        } // Se actualiza inmediatamente
+                        }
                         style={{
                           width: "50px",
                           textAlign: "center",

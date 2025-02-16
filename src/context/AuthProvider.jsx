@@ -1,4 +1,4 @@
-// // frontend/src/context/AuthProvider.jsx
+// frontend/src/context/AuthProvider.jsx
 
 import { createContext, useState, useCallback } from "react";
 import { useStorage } from "../hooks/useStorage";
@@ -31,6 +31,12 @@ const getInitialSession = () => {
         const parsedSession = JSON.parse(decryptedData);
         if (parsedSession.token) {
           const decoded = decodeToken(parsedSession.token);
+          // Verifica si el token ya expiró (exp es en segundos)
+          const currentTime = Date.now() / 1000;
+          if (decoded.exp && currentTime > decoded.exp) {
+            localStorage.removeItem("USER_SESSION");
+            return null;
+          }
           return { ...parsedSession, ...decoded };
         }
         return parsedSession;
@@ -51,19 +57,25 @@ export const AuthProvider = ({ children }) => {
 
   const { handleSetStorageSession } = useStorage();
 
+  const logout = useCallback(() => {
+    setSession(null);
+    localStorage.removeItem("USER_SESSION");
+  }, []);
+
   const handleSession = (newSession) => {
     if (newSession.token) {
       const decoded = decodeToken(newSession.token);
+      const currentTime = Date.now() / 1000;
+      // Verifica si el token está expirado al intentar establecer la sesión
+      if (decoded.exp && currentTime > decoded.exp) {
+        logout();
+        return;
+      }
       newSession = { ...newSession, ...decoded };
     }
     setSession(newSession);
     handleSetStorageSession(newSession);
   };
-
-  const logout = useCallback(() => {
-    setSession(null);
-    localStorage.removeItem("USER_SESSION");
-  }, []);
 
   return (
     <AuthContext.Provider value={{ session, isLoading, handleSession, logout }}>

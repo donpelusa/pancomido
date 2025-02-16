@@ -304,6 +304,8 @@ router.get('/dashboard', validateToken, isAdmin, adminDashboardController.getDas
 // Pedidos pendientes e históricos para admin
 router.get('/orders/pending', validateToken, isAdmin, orderController.getAdminPendingOrders);
 router.get('/orders/historical', validateToken, isAdmin, orderController.getAdminHistoricalOrders);
+// Ruta para actualizar el estado de una orden (PUT)
+router.put("/orders/:orderId/status", validateToken, isAdmin, orderController.updateOrderStatus);
 
 // Gestión de usuarios para admin
 router.get('/users', validateToken, isAdmin, adminUsersController.listUsers);

@@ -1,0 +1,9 @@
+[
+  { "key": "1", "label": "En revisión" },
+  { "key": "2", "label": "Confirmada" },
+  { "key": "3", "label": "En preparación" },
+  { "key": "4", "label": "En despacho" },
+  { "key": "5", "label": "Suspendida" },
+  { "key": "6", "label": "Sin contacto" },
+  { "key": "7", "label": "Finalizada" }
+]
