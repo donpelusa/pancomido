@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
+import { formatCLP } from "../helpers/formatPrice.helper";
 import { useNavigate } from "react-router-dom";
 import { Spin, Button } from "antd";
 import { toast } from "react-toastify";
@@ -377,7 +378,7 @@ export const CheckoutPage = () => {
                       <p className="text-xs text-gray-600">x {item.quantity}</p>
                     </div>
                     <div className="text-sm font-bold">
-                      ${item.price.toFixed(2)}
+                      ${formatCLP(item.price.toFixed(2))}
                     </div>
                   </li>
                 ))}
@@ -387,7 +388,9 @@ export const CheckoutPage = () => {
           <div className="border-t pt-4">
             <div className="flex justify-between items-center">
               <span className="font-semibold">Total:</span>
-              <span className="font-bold">${totalPayment.toFixed(2)}</span>
+              <span className="font-bold">
+                ${formatCLP(totalPayment.toFixed(2))}
+              </span>
             </div>
           </div>
           <Button

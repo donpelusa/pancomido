@@ -3,6 +3,7 @@
 import { Button, Card, List, Space, Typography, Image, Input } from "antd";
 import { useState } from "react";
 import { useCart } from "../hooks/useCart";
+import { formatCLP } from "../helpers/formatPrice.helper";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -93,10 +94,11 @@ export const CartPage = () => {
                   <Space direction="vertical" style={{ flex: 1 }}>
                     <Text strong>{item.product}</Text>
                     <Text>
-                      Precio: ${item.price.toFixed(2)} x {item.quantity}
+                      Precio: ${formatCLP(item.price.toFixed(2))} x{" "}
+                      {item.quantity}
                     </Text>
                     <Text strong>
-                      Total: ${(item.price * item.quantity).toFixed(2)}
+                      Total: ${formatCLP(item.price * item.quantity).toFixed(2)}
                     </Text>
                   </Space>
                   <div
