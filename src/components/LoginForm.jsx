@@ -21,7 +21,7 @@ export const LoginForm = () => {
     const { name, value } = event.target;
     setLogin((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "email" ? value.toLowerCase() : value,
     }));
   };
 
