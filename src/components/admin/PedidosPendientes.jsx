@@ -6,8 +6,8 @@ import { DownOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
 import { formatCLP } from "../../helpers/formatPrice.helper";
-// Importamos las opciones de estado desde JSON
 import statusOptions from "../../data/statusOptions.json";
+import { formatDateTimeChile } from "../../helpers/formatDateTimeChile.helper";
 
 export const PedidosPendientes = () => {
   const { session } = useAuth();
@@ -17,90 +17,12 @@ export const PedidosPendientes = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
   const [userModalVisible, setUserModalVisible] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
-  // Creamos el statusMap a partir del JSON
-  const statusMap = statusOptions.reduce((map, option) => {
-    map[option.key] = option.label;
-    return map;
-  }, {});
+  // Usamos la variable de entorno de Vite:
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  // Función para formatear fechas en DD-MM-YYYY
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
-
-  // Refrescar la lista de pedidos pendientes desde el endpoint de admin
-  const fetchOrders = () => {
-    if (session?.token) {
-      setLoadingOrders(true);
-      fetch(`${import.meta.env.VITE_API_URL}/api/admin/orders/pending`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.token}`,
-        },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Error al cargar los pedidos");
-          return res.json();
-        })
-        .then((data) => {
-          // Filtrar los pedidos que NO sean finalizados (order_status_id distinto de 7)
-          const pendientes = data.filter(
-            (order) => order.order_status_id !== 7
-          );
-          // Ordenar de forma descendente por ID
-          pendientes.sort((a, b) => b.id - a.id);
-          setOrders(pendientes);
-          setSelectedOrderIds([]);
-          setLoadingOrders(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          toast.error(err.message, { position: "bottom-right" });
-          setLoadingOrders(false);
-        });
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, [session]);
-
-  // Función para actualizar el estado de una orden individual
-  const updateOrderStatus = (orderId, newStatus) => {
-    fetch(
-      `${import.meta.env.VITE_API_URL}/api/admin/orders/${orderId}/status`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.token}`,
-        },
-        body: JSON.stringify({ order_status_id: newStatus }),
-      }
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error("Error al actualizar el estado");
-        return res.json();
-      })
-      .then(() => {
-        toast.success(
-          `Pedido #${orderId} actualizado a "${statusMap[String(newStatus)]}"`,
-          { position: "bottom-right" }
-        );
-        fetchOrders();
-      })
-      .catch((err) => {
-        console.error(err);
-        toast.error(err.message, { position: "bottom-right" });
-      });
-  };
-
-  // Función para confirmar el bulk update con modal de confirmación
+  // --- OTRAS funciones de selección bulk, etc. ---
   const confirmBulkUpdate = ({ key }) => {
     const statusLabel = statusOptions.find((opt) => opt.key === key)?.label;
     Modal.confirm({
@@ -112,22 +34,18 @@ export const PedidosPendientes = () => {
     });
   };
 
-  // Actualización bulk de estados
   const handleBulkUpdate = ({ key }) => {
     const newStatus = Number(key);
     Promise.all(
       selectedOrderIds.map((orderId) =>
-        fetch(
-          `${import.meta.env.VITE_API_URL}/api/admin/orders/${orderId}/status`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.token}`,
-            },
-            body: JSON.stringify({ order_status_id: newStatus }),
-          }
-        )
+        fetch(`${API_URL}/api/admin/orders/${orderId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.token}`,
+          },
+          body: JSON.stringify({ order_status_id: newStatus }),
+        })
       )
     )
       .then((responses) => {
@@ -142,7 +60,45 @@ export const PedidosPendientes = () => {
       });
   };
 
-  // Herramientas de selección
+  // --- OTRAS funciones ---
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/orders/pending`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Error al cargar los pedidos");
+      const data = await res.json();
+      // Filtrar pedidos que no estén finalizados (order_status_id !== 7)
+      const pendientes = data.filter((order) => order.order_status_id !== 7);
+      pendientes.sort((a, b) => b.id - a.id);
+      setOrders(pendientes);
+      setSelectedOrderIds([]);
+      setLoadingOrders(false);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message, { position: "bottom-right" });
+      setLoadingOrders(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session?.token) {
+      fetchOrders();
+    }
+  }, [session]);
+
+  // --- HANDLERS QUE SE USAN EN EL TOOLBAR ---
   const handleSelectAll = (e) => {
     if (orders.length === 0) {
       setSelectedOrderIds([]);
@@ -161,32 +117,19 @@ export const PedidosPendientes = () => {
     }
   };
 
-  // Estado para almacenar detalles de producto (por productId)
+  // Estado para detalles de productos
   const [productDetails, setProductDetails] = useState({});
-  // Función para obtener la imagen principal de un producto dado su productId
-  const getProductMainImage = (productId) => {
-    const detail = productDetails[productId];
-    if (detail && detail.images && detail.images.length > 0) {
-      return typeof detail.images[0] === "string"
-        ? detail.images[0]
-        : detail.images[0].secure_url ||
-            detail.images[0].url ||
-            detail.images[0].url_img ||
-            "";
-    }
-    return "";
-  };
 
-  // Cuando se abre el modal de pedido, cargar detalle de cada producto que no esté en caché
   useEffect(() => {
     if (selectedOrder && selectedOrder.products) {
+      setModalLoading(true);
       const idsToFetch = selectedOrder.products
         .map((prod) => prod.productId)
         .filter((id) => !productDetails[id]);
       if (idsToFetch.length > 0) {
         Promise.all(
           idsToFetch.map((id) =>
-            fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
+            fetch(`${API_URL}/api/products/${id}`, {
               headers: { "Content-Type": "application/json" },
             }).then((res) => res.json())
           )
@@ -197,14 +140,82 @@ export const PedidosPendientes = () => {
               newDetails[detail.id] = detail;
             });
             setProductDetails((prev) => ({ ...prev, ...newDetails }));
+            setModalLoading(false);
           })
           .catch((err) => {
             console.error("Error fetching product details:", err);
+            setModalLoading(false);
           });
+      } else {
+        setModalLoading(false);
       }
     }
-  }, [selectedOrder, productDetails]);
+  }, [selectedOrder]);
 
+  const updateOrderStatus = (orderId, newStatus) => {
+    fetch(`${API_URL}/api/admin/orders/${orderId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.token}`,
+      },
+      body: JSON.stringify({ order_status_id: newStatus }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al actualizar el estado");
+        return res.json();
+      })
+      .then(() => {
+        toast.success(
+          `Pedido #${orderId} actualizado a "${
+            statusOptions.find((opt) => opt.key === String(newStatus))?.label
+          }"`,
+          { position: "bottom-right" }
+        );
+        fetchOrders();
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error(err.message, { position: "bottom-right" });
+      });
+  };
+
+  // Función para renderizar la barra de herramientas (sin cambios respecto a la original)
+  const renderToolbar = () => (
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-2 md:space-y-0">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          onChange={handleSelectAll}
+          checked={
+            orders.length > 0 && selectedOrderIds.length === orders.length
+          }
+        >
+          Seleccionar todos
+        </Checkbox>
+        <Button onClick={() => setSelectedOrderIds([])}>
+          Desmarcar Seleccionados
+        </Button>
+      </div>
+      <div>
+        <Dropdown
+          menu={{
+            items: statusOptions.map((option) => ({
+              key: option.key,
+              label: option.label,
+              onClick: () => confirmBulkUpdate({ key: option.key }),
+            })),
+          }}
+          trigger={["click"]}
+        >
+          <Button>
+            Cambiar Estado Seleccionados <DownOutlined />
+          </Button>
+        </Dropdown>
+      </div>
+    </div>
+  );
+
+  // Abre el modal y selecciona el pedido
   const showOrderDetails = (order) => {
     setSelectedOrder(order);
     setModalVisible(true);
@@ -215,7 +226,6 @@ export const PedidosPendientes = () => {
     setSelectedOrder(null);
   };
 
-  // Modal para ver datos del usuario
   const renderUserModal = () => {
     if (!selectedOrder) return null;
     return (
@@ -270,7 +280,6 @@ export const PedidosPendientes = () => {
     );
   };
 
-  // Función para renderizar la tabla de productos del pedido
   const renderOrderProducts = () => {
     if (!selectedOrder || !selectedOrder.products) return null;
     return (
@@ -285,10 +294,17 @@ export const PedidosPendientes = () => {
             key: "imagen",
             align: "center",
             render: (productId, record) => {
-              const mainImage = getProductMainImage(productId);
-              return mainImage ? (
+              const detail = productDetails[productId];
+              return detail && detail.images && detail.images.length > 0 ? (
                 <img
-                  src={mainImage}
+                  src={
+                    typeof detail.images[0] === "string"
+                      ? detail.images[0]
+                      : detail.images[0].secure_url ||
+                        detail.images[0].url ||
+                        detail.images[0].url_img ||
+                        ""
+                  }
                   alt={record.product}
                   style={{
                     width: 50,
@@ -342,14 +358,13 @@ export const PedidosPendientes = () => {
             key: "subtotal",
             align: "center",
             render: (text, record) =>
-              formatCLP(Number(record.unit_price) * record.units),
+              formatCLP(Number(record.unit_price) * Number(record.units)),
           },
         ]}
       />
     );
   };
 
-  // Render de cada orden en la lista, con el checkbox al inicio
   const renderOrderItem = (order) => {
     const orderTotal = order.products
       ? order.products.reduce(
@@ -382,14 +397,15 @@ export const PedidosPendientes = () => {
             <strong>Fecha de compra:</strong> {formatDate(order.created_at)}
           </p>
           <p>
-            <strong>Entrega programada:</strong>{" "}
-            {formatDate(order.order_delivery_date)}
+            <strong>Entrega realizada:</strong> {formatDate(order.updated_at)}
           </p>
           <p>
             <strong>Status:</strong>{" "}
             {order.status
               ? order.status
-              : statusMap[String(order.order_status_id)] || "Desconocido"}
+              : statusOptions.find(
+                  (opt) => opt.key === String(order.order_status_id)
+                )?.label || "Desconocido"}
           </p>
           <p>
             <strong>Total:</strong> {formatCLP(orderTotal)}
@@ -413,55 +429,22 @@ export const PedidosPendientes = () => {
     );
   };
 
-  if (loadingOrders) {
-    return (
-      <div className="flex justify-center items-center">
-        <Spin tip="Cargando pedidos...">
-          <div style={{ width: "350px", height: "150px" }} />
-        </Spin>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-2 md:space-y-0">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            onChange={handleSelectAll}
-            checked={
-              orders.length > 0 && selectedOrderIds.length === orders.length
-            }
-          >
-            Seleccionar todos
-          </Checkbox>
-          <Button onClick={() => setSelectedOrderIds([])}>
-            Desmarcar Seleccionados
-          </Button>
+      {renderToolbar()}
+      {loadingOrders ? (
+        <div className="flex justify-center items-center">
+          <Spin tip="Cargando pedidos de la tienda...">
+            <div style={{ width: "350px", height: "150px" }} />
+          </Spin>
         </div>
-        <div>
-          <Dropdown
-            menu={{
-              items: statusOptions.map((option) => ({
-                key: option.key,
-                label: option.label,
-                onClick: () => confirmBulkUpdate({ key: option.key }),
-              })),
-            }}
-            trigger={["click"]}
-          >
-            <Button>
-              Cambiar Estado Seleccionados <DownOutlined />
-            </Button>
-          </Dropdown>
-        </div>
-      </div>
-
-      <List
-        itemLayout="vertical"
-        dataSource={orders}
-        renderItem={renderOrderItem}
-      />
+      ) : (
+        <List
+          itemLayout="vertical"
+          dataSource={orders}
+          renderItem={renderOrderItem}
+        />
+      )}
 
       <Modal
         title={`Detalles del Pedido #${selectedOrder ? selectedOrder.id : ""}`}
@@ -487,38 +470,52 @@ export const PedidosPendientes = () => {
         width={800}
       >
         {selectedOrder && (
-          <div>
-            {renderOrderProducts()}
-            <div className="mt-4 border-t pt-4" style={{ textAlign: "center" }}>
-              <p>
-                <strong>Total de la compra:</strong>{" "}
-                {formatCLP(
-                  selectedOrder.products
-                    ? selectedOrder.products.reduce(
-                        (acc, prod) =>
-                          acc + Number(prod.unit_price) * Number(prod.units),
-                        0
-                      )
-                    : 0
-                )}
-              </p>
-              <p>
-                <strong>Fecha de compra:</strong>{" "}
-                {formatDate(selectedOrder.created_at)}
-              </p>
-              <p>
-                <strong>Entrega programada:</strong>{" "}
-                {formatDate(selectedOrder.order_delivery_date)}
-              </p>
-              <p>
-                <strong>Status:</strong>{" "}
-                {selectedOrder.status
-                  ? selectedOrder.status
-                  : statusMap[String(selectedOrder.order_status_id)] ||
-                    "Desconocido"}
-              </p>
-            </div>
-          </div>
+          <>
+            {modalLoading ? (
+              <Spin tip={`Cargando datos de la orden #${selectedOrder.id}`}>
+                <div style={{ height: "300px" }} />
+              </Spin>
+            ) : (
+              <div>
+                {renderOrderProducts()}
+                <div
+                  className="mt-4 border-t pt-4"
+                  style={{ textAlign: "center" }}
+                >
+                  <p>
+                    <strong>Total de la compra:</strong>{" "}
+                    {formatCLP(
+                      selectedOrder.products
+                        ? selectedOrder.products.reduce(
+                            (acc, prod) =>
+                              acc +
+                              Number(prod.unit_price) * Number(prod.units),
+                            0
+                          )
+                        : 0
+                    )}
+                  </p>
+                  <p>
+                    <strong>Fecha de compra:</strong>{" "}
+                    {formatDate(selectedOrder.created_at)}
+                  </p>
+                  <p>
+                    <strong>Entrega realizada:</strong>{" "}
+                    {formatDateTimeChile(selectedOrder.updated_at)}
+                  </p>
+                  <p>
+                    <strong>Status:</strong>{" "}
+                    {selectedOrder.status
+                      ? selectedOrder.status
+                      : statusOptions.find(
+                          (opt) =>
+                            opt.key === String(selectedOrder.order_status_id)
+                        )?.label || "Desconocido"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </Modal>
 

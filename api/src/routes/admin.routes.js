@@ -289,6 +289,7 @@ const express = require('express');
 const router = express.Router();
 const { validateToken } = require('../middlewares/validateToken');
 const isAdmin = require('../middlewares/isAdmin');
+const { getStoreSummary } = require('../controllers/store.controller');
 
 // Rutas existentes para dashboard, pedidos y usuarios...
 const adminDashboardController = require('../controllers/adminDashboard.controller');
@@ -298,6 +299,8 @@ const adminUsersController = require('../controllers/adminUsers.controller');
 // Agregamos las rutas para la gestión de productos en admin
 const adminProductsController = require('../controllers/adminProducts.controller');
 
+
+
 // Dashboard de administración
 router.get('/dashboard', validateToken, isAdmin, adminDashboardController.getDashboardSummary);
 
@@ -306,6 +309,9 @@ router.get('/orders/pending', validateToken, isAdmin, orderController.getAdminPe
 router.get('/orders/historical', validateToken, isAdmin, orderController.getAdminHistoricalOrders);
 // Ruta para actualizar el estado de una orden (PUT)
 router.put("/orders/:orderId/status", validateToken, isAdmin, orderController.updateOrderStatus);
+// Ruta para obtener el resumen general de la tienda
+router.get("/dashboard/summary", validateToken, isAdmin, getStoreSummary);
+
 
 // Gestión de usuarios para admin
 router.get('/users', validateToken, isAdmin, adminUsersController.listUsers);

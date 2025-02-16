@@ -1,5 +1,4 @@
 // frontend/src/components/admin/PedidosHistoricos.jsx
-
 import { useState, useEffect } from "react";
 import { Checkbox, Button, Dropdown, List, Modal, Table, Spin } from "antd";
 import { DownOutlined } from "@ant-design/icons";
@@ -17,14 +16,11 @@ export const PedidosHistoricos = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
   const [userModalVisible, setUserModalVisible] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
-  // Creamos el statusMap a partir del JSON
-  const statusMap = statusOptions.reduce((map, option) => {
-    map[option.key] = option.label;
-    return map;
-  }, {});
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  // Función para formatear fechas en DD-MM-YYYY
+  // Formatear fecha en DD-MM-YYYY
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     const day = String(d.getDate()).padStart(2, "0");
@@ -33,23 +29,11 @@ export const PedidosHistoricos = () => {
     return `${day}-${month}-${year}`;
   };
 
-  // Función para formatear fechas con hora: DD-MM-YYYY HH:mm
-  const formatDateTime = (dateStr) => {
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, "0");
-    const minutes = String(d.getMinutes()).padStart(2, "0");
-    return `${day}-${month}-${year} ${hours}:${minutes}`;
-  };
-
-  // Refrescar la lista de pedidos históricos desde el endpoint de admin
+  // Cargar pedidos históricos
   const fetchOrders = () => {
     if (session?.token) {
       setLoadingOrders(true);
-      // Se asume que existe el endpoint /api/admin/orders/historical
-      fetch(`${import.meta.env.VITE_API_URL}/api/admin/orders/historical`, {
+      fetch(`${API_URL}/api/admin/orders/historical`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.token}`,
@@ -60,11 +44,10 @@ export const PedidosHistoricos = () => {
           return res.json();
         })
         .then((data) => {
-          // Filtrar pedidos que tengan status Finalizada (order_status_id === 7)
+          // Filtrar pedidos con status Finalizada (order_status_id === 7)
           const historicos = data.filter(
             (order) => order.order_status_id === 7
           );
-          // Ordenar de forma descendente por ID
           historicos.sort((a, b) => b.id - a.id);
           setOrders(historicos);
           setSelectedOrderIds([]);
@@ -82,29 +65,26 @@ export const PedidosHistoricos = () => {
     fetchOrders();
   }, [session]);
 
-  // Función para actualizar el estado de una orden individual
+  // Actualizar estado de orden individual
   const updateOrderStatus = (orderId, newStatus) => {
-    fetch(
-      `${import.meta.env.VITE_API_URL}/api/admin/orders/${orderId}/status`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.token}`,
-        },
-        body: JSON.stringify({ order_status_id: newStatus }),
-      }
-    )
+    fetch(`${API_URL}/api/admin/orders/${orderId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.token}`,
+      },
+      body: JSON.stringify({ order_status_id: newStatus }),
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Error al actualizar el estado");
         return res.json();
       })
       .then(() => {
         toast.success(
-          `Pedido #${orderId} actualizado a "${statusMap[newStatus]}"`,
-          {
-            position: "bottom-right",
-          }
+          `Pedido #${orderId} actualizado a "${
+            statusOptions.find((opt) => opt.key === String(newStatus))?.label
+          }"`,
+          { position: "bottom-right" }
         );
         fetchOrders();
       })
@@ -114,7 +94,7 @@ export const PedidosHistoricos = () => {
       });
   };
 
-  // Función para confirmar el bulk update con modal de confirmación
+  // Bulk update
   const confirmBulkUpdate = ({ key }) => {
     const statusLabel = statusOptions.find((opt) => opt.key === key)?.label;
     Modal.confirm({
@@ -126,22 +106,18 @@ export const PedidosHistoricos = () => {
     });
   };
 
-  // Actualización bulk de estados
   const handleBulkUpdate = ({ key }) => {
     const newStatus = Number(key);
     Promise.all(
       selectedOrderIds.map((orderId) =>
-        fetch(
-          `${import.meta.env.VITE_API_URL}/api/admin/orders/${orderId}/status`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.token}`,
-            },
-            body: JSON.stringify({ order_status_id: newStatus }),
-          }
-        )
+        fetch(`${API_URL}/api/admin/orders/${orderId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.token}`,
+          },
+          body: JSON.stringify({ order_status_id: newStatus }),
+        })
       )
     )
       .then((responses) => {
@@ -175,9 +151,8 @@ export const PedidosHistoricos = () => {
     }
   };
 
-  // Estado para almacenar detalles de producto (por productId)
+  // Estado para detalles de producto
   const [productDetails, setProductDetails] = useState({});
-  // Función para obtener la imagen principal de un producto dado su productId
   const getProductMainImage = (productId) => {
     const detail = productDetails[productId];
     if (detail && detail.images && detail.images.length > 0) {
@@ -191,16 +166,17 @@ export const PedidosHistoricos = () => {
     return "";
   };
 
-  // Al abrir el modal de pedido, cargar detalle de cada producto que no esté en caché
+  // Al abrir el modal, cargar los detalles de productos que no estén en caché.
   useEffect(() => {
     if (selectedOrder && selectedOrder.products) {
+      setModalLoading(true);
       const idsToFetch = selectedOrder.products
         .map((prod) => prod.productId)
         .filter((id) => !productDetails[id]);
       if (idsToFetch.length > 0) {
         Promise.all(
           idsToFetch.map((id) =>
-            fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
+            fetch(`${API_URL}/api/products/${id}`, {
               headers: { "Content-Type": "application/json" },
             }).then((res) => res.json())
           )
@@ -211,13 +187,52 @@ export const PedidosHistoricos = () => {
               newDetails[detail.id] = detail;
             });
             setProductDetails((prev) => ({ ...prev, ...newDetails }));
+            setModalLoading(false);
           })
           .catch((err) => {
             console.error("Error fetching product details:", err);
+            setModalLoading(false);
           });
+      } else {
+        setModalLoading(false);
       }
     }
-  }, [selectedOrder, productDetails]);
+  }, [selectedOrder]);
+
+  // Barra de herramientas (igual que antes)
+  const renderToolbar = () => (
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-2 md:space-y-0">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          onChange={handleSelectAll}
+          checked={
+            orders.length > 0 && selectedOrderIds.length === orders.length
+          }
+        >
+          Seleccionar todos
+        </Checkbox>
+        <Button onClick={() => setSelectedOrderIds([])}>
+          Desmarcar Seleccionados
+        </Button>
+      </div>
+      <div>
+        <Dropdown
+          menu={{
+            items: statusOptions.map((option) => ({
+              key: option.key,
+              label: option.label,
+              onClick: () => confirmBulkUpdate({ key: option.key }),
+            })),
+          }}
+          trigger={["click"]}
+        >
+          <Button>
+            Cambiar Estado Seleccionados <DownOutlined />
+          </Button>
+        </Dropdown>
+      </div>
+    </div>
+  );
 
   const showOrderDetails = (order) => {
     setSelectedOrder(order);
@@ -229,7 +244,6 @@ export const PedidosHistoricos = () => {
     setSelectedOrder(null);
   };
 
-  // Modal para ver datos del usuario
   const renderUserModal = () => {
     if (!selectedOrder) return null;
     return (
@@ -284,7 +298,6 @@ export const PedidosHistoricos = () => {
     );
   };
 
-  // Función para renderizar la tabla de productos del pedido
   const renderOrderProducts = () => {
     if (!selectedOrder || !selectedOrder.products) return null;
     return (
@@ -356,16 +369,14 @@ export const PedidosHistoricos = () => {
             key: "subtotal",
             align: "center",
             render: (text, record) =>
-              formatCLP(Number(record.unit_price) * record.units),
+              formatCLP(Number(record.unit_price) * Number(record.units)),
           },
         ]}
       />
     );
   };
 
-  // Render de cada orden en la lista, con el checkbox al inicio
   const renderOrderItem = (order) => {
-    // Calcular el total manualmente sumando los subtotales de cada producto
     const orderTotal = order.products
       ? order.products.reduce(
           (acc, prod) => acc + Number(prod.unit_price) * Number(prod.units),
@@ -381,7 +392,6 @@ export const PedidosHistoricos = () => {
           justifyContent: "space-between",
         }}
       >
-        {/* Checkbox al inicio */}
         <Checkbox
           checked={selectedOrderIds.includes(order.id)}
           onChange={(e) => handleSelectOrder(order.id, e.target.checked)}
@@ -389,7 +399,7 @@ export const PedidosHistoricos = () => {
         />
         <div
           onClick={() => showOrderDetails(order)}
-          style={{ cursor: "pointer", flex: 1 }}
+          style={{ cursor: "pointer", flex: 1, paddingLeft: 20 }}
         >
           <p>
             <strong>Pedido #{order.id}</strong>
@@ -398,20 +408,21 @@ export const PedidosHistoricos = () => {
             <strong>Fecha de compra:</strong> {formatDate(order.created_at)}
           </p>
           <p>
-            <strong>Entrega realizada:</strong>{" "}
-            {formatDateTimeChile(order.updated_at)}
+            <strong>Entrega programada:</strong>{" "}
+            {formatDate(order.order_delivery_date)}
           </p>
           <p>
             <strong>Status:</strong>{" "}
             {order.status
               ? order.status
-              : statusOptions[order.order_status_id] || "Desconocido"}
+              : statusOptions.find(
+                  (opt) => opt.key === String(order.order_status_id)
+                )?.label || "Desconocido"}
           </p>
           <p>
             <strong>Total:</strong> {formatCLP(orderTotal)}
           </p>
         </div>
-        {/* Dropdown individual para cambiar estado */}
         <Dropdown
           menu={{
             items: statusOptions.map((option) => ({
@@ -442,47 +453,21 @@ export const PedidosHistoricos = () => {
 
   return (
     <div className="p-4">
-      {/* Herramientas superiores */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-2 md:space-y-0">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            onChange={handleSelectAll}
-            checked={
-              orders.length > 0 && selectedOrderIds.length === orders.length
-            }
-          >
-            Seleccionar todos
-          </Checkbox>
-          <Button onClick={() => setSelectedOrderIds([])}>
-            Desmarcar Seleccionados
-          </Button>
+      {renderToolbar()}
+      {loadingOrders ? (
+        <div className="flex justify-center items-center">
+          <Spin tip="Cargando pedidos históricos...">
+            <div style={{ width: "350px", height: "150px" }} />
+          </Spin>
         </div>
-        <div>
-          <Dropdown
-            menu={{
-              items: statusOptions.map((option) => ({
-                key: option.key,
-                label: option.label,
-                onClick: () => confirmBulkUpdate({ key: option.key }),
-              })),
-            }}
-            trigger={["click"]}
-          >
-            <Button>
-              Cambiar Estado Seleccionados <DownOutlined />
-            </Button>
-          </Dropdown>
-        </div>
-      </div>
+      ) : (
+        <List
+          itemLayout="vertical"
+          dataSource={orders}
+          renderItem={renderOrderItem}
+        />
+      )}
 
-      {/* Lista de pedidos históricos */}
-      <List
-        itemLayout="vertical"
-        dataSource={orders}
-        renderItem={renderOrderItem}
-      />
-
-      {/* Modal de detalle de pedido */}
       <Modal
         title={`Detalles del Pedido #${selectedOrder ? selectedOrder.id : ""}`}
         open={modalVisible}
@@ -507,42 +492,55 @@ export const PedidosHistoricos = () => {
         width={800}
       >
         {selectedOrder && (
-          <div>
-            {renderOrderProducts()}
-            <div className="mt-4 border-t pt-4" style={{ textAlign: "center" }}>
-              <p>
-                <strong>Total de la compra:</strong>{" "}
-                {formatCLP(
-                  selectedOrder.products
-                    ? selectedOrder.products.reduce(
-                        (acc, prod) =>
-                          acc + Number(prod.unit_price) * Number(prod.units),
-                        0
-                      )
-                    : 0
-                )}
-              </p>
-              <p>
-                <strong>Fecha de compra:</strong>{" "}
-                {formatDate(selectedOrder.created_at)}
-              </p>
-              <p>
-                <strong>Entrega realizada:</strong>{" "}
-                {formatDateTimeChile(selectedOrder.updated_at)}
-              </p>
-              <p>
-                <strong>Status:</strong>{" "}
-                {selectedOrder.status
-                  ? selectedOrder.status
-                  : statusOptions[selectedOrder.order_status_id] ||
-                    "Desconocido"}
-              </p>
-            </div>
-          </div>
+          <>
+            {modalLoading ? (
+              <Spin tip={`Cargando datos de la orden #${selectedOrder.id}`}>
+                <div style={{ height: "300px" }} />
+              </Spin>
+            ) : (
+              <div>
+                {renderOrderProducts()}
+                <div
+                  className="mt-4 border-t pt-4"
+                  style={{ textAlign: "center" }}
+                >
+                  <p>
+                    <strong>Total de la compra:</strong>{" "}
+                    {formatCLP(
+                      selectedOrder.products
+                        ? selectedOrder.products.reduce(
+                            (acc, prod) =>
+                              acc +
+                              Number(prod.unit_price) * Number(prod.units),
+                            0
+                          )
+                        : 0
+                    )}
+                  </p>
+                  <p>
+                    <strong>Fecha de compra:</strong>{" "}
+                    {formatDate(selectedOrder.created_at)}
+                  </p>
+                  <p>
+                    <strong>Entrega programada:</strong>{" "}
+                    {formatDate(selectedOrder.order_delivery_date)}
+                  </p>
+                  <p>
+                    <strong>Status:</strong>{" "}
+                    {selectedOrder.status
+                      ? selectedOrder.status
+                      : statusOptions.find(
+                          (opt) =>
+                            opt.key === String(selectedOrder.order_status_id)
+                        )?.label || "Desconocido"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </Modal>
 
-      {/* Modal de datos del usuario */}
       {renderUserModal()}
     </div>
   );

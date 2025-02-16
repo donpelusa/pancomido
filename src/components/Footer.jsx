@@ -16,9 +16,9 @@ export const Footer = () => {
         <div className="ml-10">
           <p className="font-bold">Pan Comido</p>
           <p>Panadería artesanal en Caldera, Atacama</p>
-          <p>📍 Dirección: Calle Falsa 123, Caldera, Atacama</p>
-          <p>📞 Teléfono: +56 9 1234 5678</p>
-          <p>📧 Email: contacto@pancomido.cl</p>
+          <p>📍 Dirección: Selin Alvarado 935, Caldera, Atacama</p>
+          <p>📞 Teléfono: +56 9 9280 0156</p>
+          <p>📧 Email: lapancomido@gmail.com</p>
         </div>
       </div>
     </footer>
