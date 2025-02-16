@@ -94,10 +94,10 @@ export const CartPage = () => {
                   <Space direction="vertical" style={{ flex: 1 }}>
                     <Text strong>{item.product}</Text>
                     <Text>
-                      Precio: ${formatCLP(item.price)} x {item.quantity}
+                      Precio: {formatCLP(item.price)} x {item.quantity}
                     </Text>
                     <Text strong>
-                      Total: ${formatCLP(item.price * item.quantity)}
+                      Total: {formatCLP(item.price * item.quantity)}
                     </Text>
                   </Space>
                   <div
@@ -167,7 +167,7 @@ export const CartPage = () => {
 
         {/* Total del carrito */}
         <div style={{ marginTop: "24px", textAlign: "right" }}>
-          <Title level={4}>Total: ${formatCLP(total)}</Title>
+          <Title level={4}>Total: {formatCLP(total)}</Title>
           <Button
             type="primary"
             size="large"
