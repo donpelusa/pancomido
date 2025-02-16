@@ -378,7 +378,7 @@ export const CheckoutPage = () => {
                       <p className="text-xs text-gray-600">x {item.quantity}</p>
                     </div>
                     <div className="text-sm font-bold">
-                      ${formatCLP(item.price.toFixed(2))}
+                      ${formatCLP(item.price)}
                     </div>
                   </li>
                 ))}
@@ -388,9 +388,7 @@ export const CheckoutPage = () => {
           <div className="border-t pt-4">
             <div className="flex justify-between items-center">
               <span className="font-semibold">Total:</span>
-              <span className="font-bold">
-                ${formatCLP(totalPayment.toFixed(2))}
-              </span>
+              <span className="font-bold">${formatCLP(totalPayment)}</span>
             </div>
           </div>
           <Button
