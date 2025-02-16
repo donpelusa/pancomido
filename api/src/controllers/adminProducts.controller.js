@@ -10,8 +10,8 @@ const cloudinary = require('../../cloudinaryConfig');
  * con objetos { secure_url, public_id }.
  */
 const getAdminProducts = async (req, res, next) => {
-    try {
-        const query = `
+  try {
+    const query = `
         SELECT 
           p.*,
           pi_main.url_img,
@@ -40,11 +40,11 @@ const getAdminProducts = async (req, res, next) => {
         ) cat ON p.id = cat.id_product
         ORDER BY p.id;
       `;
-        const { rows } = await db.query(query);
-        res.json(rows);
-    } catch (err) {
-        next(err);
-    }
+    const { rows } = await db.query(query);
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -64,43 +64,43 @@ const getAdminProducts = async (req, res, next) => {
  * }
  */
 const createProduct = async (req, res, next) => {
-    try {
-        const { stock, categories, ...productData } = req.body;
-        const newProduct = await Product.createProduct(productData);
+  try {
+    const { stock, categories, ...productData } = req.body;
+    const newProduct = await Product.createProduct(productData);
 
-        // Insertar stock inicial
-        const initialStock = stock !== undefined ? stock : 0;
-        const stockRecord = await Product.createStock(newProduct.id, initialStock);
-        newProduct.stock = stockRecord.stock;
+    // Insertar stock inicial
+    const initialStock = stock !== undefined ? stock : 0;
+    const stockRecord = await Product.createStock(newProduct.id, initialStock);
+    newProduct.stock = stockRecord.stock;
 
-        // Insertar categorías (si se proporcionan)
-        if (Array.isArray(categories)) {
-            for (const catName of categories) {
-                const catSelectQuery = `SELECT id FROM ${schema}.categories WHERE category = $1`;
-                const catSelectResult = await db.query(catSelectQuery, [catName]);
-                let catId;
-                if (catSelectResult.rows.length > 0) {
-                    catId = catSelectResult.rows[0].id;
-                } else {
-                    const catInsertQuery = `
+    // Insertar categorías (si se proporcionan)
+    if (Array.isArray(categories)) {
+      for (const catName of categories) {
+        const catSelectQuery = `SELECT id FROM ${schema}.categories WHERE category = $1`;
+        const catSelectResult = await db.query(catSelectQuery, [catName]);
+        let catId;
+        if (catSelectResult.rows.length > 0) {
+          catId = catSelectResult.rows[0].id;
+        } else {
+          const catInsertQuery = `
             INSERT INTO ${schema}.categories (category)
             VALUES ($1) RETURNING id
           `;
-                    const catInsertResult = await db.query(catInsertQuery, [catName]);
-                    catId = catInsertResult.rows[0].id;
-                }
-                const cpInsertQuery = `
+          const catInsertResult = await db.query(catInsertQuery, [catName]);
+          catId = catInsertResult.rows[0].id;
+        }
+        const cpInsertQuery = `
           INSERT INTO ${schema}.categories_products (id_product, id_category)
           VALUES ($1, $2)
         `;
-                await db.query(cpInsertQuery, [newProduct.id, catId]);
-            }
-        }
-
-        res.status(201).json(newProduct);
-    } catch (err) {
-        next(err);
+        await db.query(cpInsertQuery, [newProduct.id, catId]);
+      }
     }
+
+    res.status(201).json(newProduct);
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -108,22 +108,22 @@ const createProduct = async (req, res, next) => {
  * Se espera en el body: product, price, ingredients, weight, description, nutrition, available, categories, images.
  */
 const updateProductDetails = async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const {
-        product,
-        price,
-        ingredients,
-        weight,
-        description,
-        nutrition,
-        available,
-        categories,
-        images // Se espera que, en el caso de edición, este arreglo sea enviado únicamente si hubo cambios
-      } = req.body;
-  
-      // Actualizar datos básicos del producto
-      const updateQuery = `
+  try {
+    const { id } = req.params;
+    const {
+      product,
+      price,
+      ingredients,
+      weight,
+      description,
+      nutrition,
+      available,
+      categories,
+      images // Se espera que, en el caso de edición, este arreglo sea enviado únicamente si hubo cambios
+    } = req.body;
+
+    // Actualizar datos básicos del producto
+    const updateQuery = `
         UPDATE ${schema}.products
         SET product = $1,
             price = $2,
@@ -136,108 +136,121 @@ const updateProductDetails = async (req, res, next) => {
         WHERE id = $8
         RETURNING *
       `;
-      const updateValues = [product, price, ingredients, weight, description, nutrition, available, id];
-      const { rows } = await db.query(updateQuery, updateValues);
-      const updatedProduct = rows[0];
-  
-      // Actualizar categorías
-      await db.query(`DELETE FROM ${schema}.categories_products WHERE id_product = $1`, [id]);
-      if (Array.isArray(categories)) {
-        for (const catName of categories) {
-          const catSelectResult = await db.query(`SELECT id FROM ${schema}.categories WHERE category = $1`, [catName]);
-          let catId;
-          if (catSelectResult.rows.length > 0) {
-            catId = catSelectResult.rows[0].id;
-          } else {
-            const catInsertResult = await db.query(
-              `INSERT INTO ${schema}.categories (category) VALUES ($1) RETURNING id`,
-              [catName]
-            );
-            catId = catInsertResult.rows[0].id;
-          }
-          await db.query(
-            `INSERT INTO ${schema}.categories_products (id_product, id_category) VALUES ($1, $2)`,
-            [id, catId]
+    const updateValues = [product, price, ingredients, weight, description, nutrition, available, id];
+    const { rows } = await db.query(updateQuery, updateValues);
+    const updatedProduct = rows[0];
+
+    // Actualizar categorías
+    // Primero eliminamos las relaciones antiguas
+    await db.query(`DELETE FROM ${schema}.categories_products WHERE id_product = $1`, [id]);
+
+    if (Array.isArray(categories)) {
+      for (const catName of categories) {
+        const catSelectResult = await db.query(
+          `SELECT id FROM ${schema}.categories WHERE category = $1`,
+          [catName]
+        );
+        let catId;
+        if (catSelectResult.rows.length > 0) {
+          catId = catSelectResult.rows[0].id;
+        } else {
+          const catInsertResult = await db.query(
+            `INSERT INTO ${schema}.categories (category) VALUES ($1) RETURNING id`,
+            [catName]
           );
+          catId = catInsertResult.rows[0].id;
         }
+        await db.query(
+          `INSERT INTO ${schema}.categories_products (id_product, id_category) VALUES ($1, $2)`,
+          [id, catId]
+        );
       }
-  
-      // Actualizar imágenes solo si el payload incluye la propiedad "images"
-      if (req.body.hasOwnProperty('images')) {
-        // 1. Obtener las imágenes actuales de la BD para este producto
-        const currentImagesResult = await db.query(
-          `SELECT * FROM ${schema}.product_img WHERE id_product = $1`,
-          [id]
-        );
-        const currentImages = currentImagesResult.rows;
-        const currentPublicIds = currentImages.map(img => img.cloudinary_public_id);
-  
-        // 2. Procesar el arreglo enviado en el payload
-        // Se espera que cada objeto en "images" tenga al menos:
-        //   - secure_url (o url)
-        //   - public_id
-        const newImages = images; // Arreglo de imágenes enviado por el frontend
-        const newPublicIds = newImages.map(img => img.public_id).filter(pid => pid);
-  
-        // 3. Eliminar las imágenes que ya no estén en el payload
-        const imagesToDelete = currentImages.filter(
-          img => !newPublicIds.includes(img.cloudinary_public_id)
-        );
-        for (const img of imagesToDelete) {
-          try {
-            await cloudinary.uploader.destroy(img.cloudinary_public_id);
-          } catch (error) {
-            console.error(`Error deleting image ${img.cloudinary_public_id}:`, error);
-            // Se puede decidir reintentar o continuar según la política de errores
-          }
-          await db.query(`DELETE FROM ${schema}.product_img WHERE id = $1`, [img.id]);
+    }
+
+    // Eliminar categorías huérfanas: aquellas que no están asociadas a ningún producto
+    await db.query(`
+      DELETE FROM ${schema}.categories
+      WHERE id NOT IN (
+        SELECT DISTINCT id_category FROM ${schema}.categories_products
+      )
+    `);
+
+    // Actualizar imágenes solo si el payload incluye la propiedad "images"
+    if (req.body.hasOwnProperty('images')) {
+      // 1. Obtener las imágenes actuales de la BD para este producto
+      const currentImagesResult = await db.query(
+        `SELECT * FROM ${schema}.product_img WHERE id_product = $1`,
+        [id]
+      );
+      const currentImages = currentImagesResult.rows;
+      const currentPublicIds = currentImages.map(img => img.cloudinary_public_id);
+
+      // 2. Procesar el arreglo enviado en el payload
+      // Se espera que cada objeto en "images" tenga al menos:
+      //   - secure_url (o url)
+      //   - public_id
+      const newImages = images; // Arreglo de imágenes enviado por el frontend
+      const newPublicIds = newImages.map(img => img.public_id).filter(pid => pid);
+
+      // 3. Eliminar las imágenes que ya no estén en el payload
+      const imagesToDelete = currentImages.filter(
+        img => !newPublicIds.includes(img.cloudinary_public_id)
+      );
+      for (const img of imagesToDelete) {
+        try {
+          await cloudinary.uploader.destroy(img.cloudinary_public_id);
+        } catch (error) {
+          console.error(`Error deleting image ${img.cloudinary_public_id}:`, error);
+          // Se puede decidir reintentar o continuar según la política de errores
         }
-  
-        // 4. Insertar las nuevas imágenes (aquellas que estén en el payload pero no en la BD)
-        const imagesToInsert = newImages.filter(
-          img => !currentPublicIds.includes(img.public_id)
-        );
-        for (const img of imagesToInsert) {
-          // Solo insertar si se tiene tanto la URL como el public_id
-          if (img.secure_url && img.public_id) {
-            const insertImgQuery = `
+        await db.query(`DELETE FROM ${schema}.product_img WHERE id = $1`, [img.id]);
+      }
+
+      // 4. Insertar las nuevas imágenes (aquellas que estén en el payload pero no en la BD)
+      const imagesToInsert = newImages.filter(
+        img => !currentPublicIds.includes(img.public_id)
+      );
+      for (const img of imagesToInsert) {
+        // Solo insertar si se tiene tanto la URL como el public_id
+        if (img.secure_url && img.public_id) {
+          const insertImgQuery = `
               INSERT INTO ${schema}.product_img (id_product, url_img, cloudinary_public_id)
               VALUES ($1, $2, $3)
             `;
-            await db.query(insertImgQuery, [id, img.secure_url, img.public_id]);
-          }
+          await db.query(insertImgQuery, [id, img.secure_url, img.public_id]);
         }
       }
-      
-      res.json(updatedProduct);
-    } catch (err) {
-      next(err);
     }
-  };
-  
+
+    res.json(updatedProduct);
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 /**
  * Actualizar stock de un producto.
  */
 const updateStock = async (req, res, next) => {
-    try {
-        const { id } = req.params; // id del producto
-        const { stock } = req.body;
-        const query = `
+  try {
+    const { id } = req.params; // id del producto
+    const { stock } = req.body;
+    const query = `
       UPDATE ${schema}.stock
       SET stock = $1,
           updated_at = NOW()
       WHERE id_product = $2
       RETURNING *
     `;
-        const { rows } = await db.query(query, [stock, id]);
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Producto no encontrado en stock' });
-        }
-        res.json(rows[0]);
-    } catch (err) {
-        next(err);
+    const { rows } = await db.query(query, [stock, id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado en stock' });
     }
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -246,66 +259,69 @@ const updateStock = async (req, res, next) => {
  * y su carpeta contenedora con el id de producto.
  */
 const deleteMultipleProducts = async (req, res, next) => {
-    try {
-        const { productIds } = req.body;
-        if (!Array.isArray(productIds) || productIds.length === 0) {
-            return res.status(400).json({ error: 'Se requiere un arreglo de productIds' });
-        }
-
-        // Para cada producto a eliminar, obtener las imágenes y borrarlas de Cloudinary
-        for (const productId of productIds) {
-            const imageQuery = `SELECT * FROM ${schema}.product_img WHERE id_product = $1`;
-            const { rows: imageRows } = await db.query(imageQuery, [productId]);
-            for (const img of imageRows) {
-                try {
-                    await cloudinary.uploader.destroy(img.cloudinary_public_id);
-                } catch (cloudErr) {
-                    console.error(`Error eliminando imagen ${img.cloudinary_public_id} en Cloudinary:`, cloudErr);
-                    // Se continúa con la eliminación de las demás imágenes
-                }
-            }
-            // Intentar eliminar la carpeta asociada al producto
-            try {
-                await cloudinary.api.delete_folder(`productos/${productId}`);
-            } catch (folderErr) {
-                console.error(`Error eliminando carpeta products/${productId}:`, folderErr);
-                // Nota: Si la carpeta no está vacía o no existe, se mostrará un error; puedes decidir si abortar o continuar.
-            }
-        }
-
-        // Eliminar registros de imágenes en la BD
-        const deleteImagesQuery = `
-        DELETE FROM ${schema}.product_img
-        WHERE id_product = ANY($1::int[])
-      `;
-        await db.query(deleteImagesQuery, [productIds]);
-
-        // Eliminar los productos
-        const deleteProductsQuery = `
-        DELETE FROM ${schema}.products
-        WHERE id = ANY($1::int[])
-        RETURNING *
-      `;
-        const { rows } = await db.query(deleteProductsQuery, [productIds]);
-
-        // Eliminar categorías huérfanas
-        const orphanQuery = `
-        DELETE FROM ${schema}.categories
-        WHERE id NOT IN (SELECT DISTINCT id_category FROM ${schema}.categories_products)
-        RETURNING *
-      `;
-        await db.query(orphanQuery);
-
-        res.json({ message: 'Productos eliminados', products: rows });
-    } catch (err) {
-        next(err);
+  try {
+    const { productIds } = req.body;
+    if (!Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ error: 'Se requiere un arreglo de productIds' });
     }
+
+    // Para cada producto a eliminar, obtener las imágenes y borrarlas de Cloudinary
+    for (const productId of productIds) {
+      const imageQuery = `SELECT * FROM ${schema}.product_img WHERE id_product = $1`;
+      const { rows: imageRows } = await db.query(imageQuery, [productId]);
+      for (const img of imageRows) {
+        try {
+          await cloudinary.uploader.destroy(img.cloudinary_public_id);
+        } catch (cloudErr) {
+          console.error(`Error eliminando imagen ${img.cloudinary_public_id} en Cloudinary:`, cloudErr);
+          // Se continúa con la eliminación de las demás imágenes
+        }
+      }
+      // Intentar eliminar la carpeta asociada al producto
+      try {
+        await cloudinary.api.delete_folder(`productos/${productId}`);
+      } catch (folderErr) {
+        console.error(`Error eliminando carpeta products/${productId}:`, folderErr);
+        // Nota: Si la carpeta no está vacía o no existe, se mostrará un error; puedes decidir si abortar o continuar.
+      }
+    }
+
+    // Eliminar registros de imágenes en la BD
+    const deleteImagesQuery = `
+      DELETE FROM ${schema}.product_img
+      WHERE id_product = ANY($1::int[])
+    `;
+    await db.query(deleteImagesQuery, [productIds]);
+
+    // Eliminar los productos
+    const deleteProductsQuery = `
+      DELETE FROM ${schema}.products
+      WHERE id = ANY($1::int[])
+      RETURNING *
+    `;
+    const { rows } = await db.query(deleteProductsQuery, [productIds]);
+
+    // Eliminar categorías huérfanas: aquellas que no están asociadas a ningún producto
+    const orphanQuery = `
+      DELETE FROM ${schema}.categories
+      WHERE id NOT IN (
+        SELECT DISTINCT id_category FROM ${schema}.categories_products
+      )
+      RETURNING *
+    `;
+    await db.query(orphanQuery);
+
+    res.json({ message: 'Productos eliminados', products: rows });
+  } catch (err) {
+    next(err);
+  }
 };
 
+
 module.exports = {
-    getAdminProducts,
-    createProduct,
-    updateProductDetails,
-    updateStock,
-    deleteMultipleProducts,
+  getAdminProducts,
+  createProduct,
+  updateProductDetails,
+  updateStock,
+  deleteMultipleProducts,
 };
