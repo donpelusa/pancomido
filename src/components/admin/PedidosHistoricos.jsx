@@ -408,8 +408,8 @@ export const PedidosHistoricos = () => {
             <strong>Fecha de compra:</strong> {formatDate(order.created_at)}
           </p>
           <p>
-            <strong>Entrega programada:</strong>{" "}
-            {formatDate(order.order_delivery_date)}
+            <strong>Entrega realizada:</strong>{" "}
+            {formatDateTimeChile(order.updated_at)}
           </p>
           <p>
             <strong>Status:</strong>{" "}

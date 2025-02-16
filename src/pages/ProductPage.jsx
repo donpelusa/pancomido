@@ -127,11 +127,14 @@ export const ProductPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Imagen principal */}
         <div className="flex justify-center">
-          <div className="overflow-hidden border border-black p-4">
+          <div
+            className="p-4"
+            style={{ width: "31.25rem", height: "31.25rem" }}
+          >
             <img
               src={mainImage}
               alt={product.product}
-              className="transition-transform duration-300 ease-in-out transform hover:scale-105"
+              className="object-cover rounded-md shadow-2xl w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-105"
             />
           </div>
         </div>
@@ -139,7 +142,15 @@ export const ProductPage = () => {
         {/* Información del producto */}
         <div>
           <h1 className="text-3xl font-bold">{product.product}</h1>
-          <p className="text-gray-600 mt-2">{product.ingredients}</p>
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold">Ingredientes</h3>
+            <ul className="text-gray-600 mt-2 list-disc pl-5">
+              {product.ingredients.split("\n").map((ingredient, index) => (
+                <li key={index}>{ingredient}</li>
+              ))}
+            </ul>
+          </div>
+
           <p
             className={`mt-4 font-semibold ${
               product.stock > 0 ? "text-green-600" : "text-gray-600"
@@ -165,7 +176,7 @@ export const ProductPage = () => {
               onBlur={(e) =>
                 handleQuantityChange(parseInt(e.target.value) || 1)
               }
-              className="w-12 h-8 text-center border border-black"
+              className="w-12 h-8.5 text-center border border-black"
             />
             <button
               onClick={() => handleQuantityChange(quantity + 1)}
@@ -175,8 +186,7 @@ export const ProductPage = () => {
             </button>
             <button
               onClick={handleAddToCart}
-              // No usamos disabled para que el onClick se dispare
-              className={`bg-black text-white px-4 py-2 ml-4 transition-colors duration-200 hover:bg-gray-800 ${
+              className={`bg-black text-white px-4 py-2 ml-4 rounded-md transition-colors duration-200 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 ${
                 product.stock === 0 ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
@@ -189,8 +199,8 @@ export const ProductPage = () => {
               <img
                 key={index}
                 src={img}
-                alt={`Miniatura ${index + 1}`}
-                className="w-20 h-20 border border-black cursor-pointer object-contain p-1"
+                alt={`Thumbnail ${index + 1}`}
+                className="w-[10rem] h-[10rem] object-cover rounded-md shadow-2xl cursor-pointer transition-transform duration-300 ease-in-out transform hover:scale-105"
                 onClick={() => handleThumbnailClick(index)}
               />
             ))}
