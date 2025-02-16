@@ -115,7 +115,7 @@ export const LoginForm = () => {
           htmlFor="email"
           className="block text-sm font-medium text-gray-700"
         >
-          Usuario - Para admin usa: admin@test.com
+          Usuario
         </label>
         <input
           onChange={handleOnChange}
@@ -132,7 +132,7 @@ export const LoginForm = () => {
           htmlFor="password"
           className="block text-sm font-medium text-gray-700"
         >
-          Password (123qwe)
+          Password
         </label>
         <input
           onChange={handleOnChange}
