@@ -17,7 +17,7 @@ export const RegisterPage = () => {
         {/* Usamos flex y items-stretch para que ambas columnas tengan el mismo alto */}
         <div className="flex flex-col lg:flex-row items-stretch h-full">
           {/* Columna izquierda: formulario de registro */}
-          <div className="w-full lg:w-1/2 p-8 flex flex-col justify-center">
+          <div className="w-full lg:w-1/2 p-10">
             <h1 className="text-3xl font-semibold mb-6 text-black text-center">
               Registro
             </h1>
