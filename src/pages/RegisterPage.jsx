@@ -12,12 +12,12 @@ export const RegisterPage = () => {
   ).href;
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-[850px] bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="flex items-center justify-center max-h-screen p-4">
+      <div className="w-full max-w-[850px] bg-white rounded-xl shadow-lg overflow-hidden max-h-[35rem]">
         {/* Usamos flex y items-stretch para que ambas columnas tengan el mismo alto */}
-        <div className="flex flex-col lg:flex-row items-stretch">
+        <div className="flex flex-col lg:flex-row items-stretch h-full">
           {/* Columna izquierda: formulario de registro */}
-          <div className="w-full lg:w-1/2 p-8">
+          <div className="w-full lg:w-1/2 p-8 flex flex-col justify-center">
             <h1 className="text-3xl font-semibold mb-6 text-black text-center">
               Registro
             </h1>
