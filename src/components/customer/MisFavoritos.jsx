@@ -1,7 +1,7 @@
 // frontend/src/components/customer/MisFavoritos.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 import { FaHeart } from "react-icons/fa";
 import { Spin } from "antd";
 import { useFavorites } from "../../hooks/useFavorites";
@@ -31,11 +31,15 @@ export const MisFavoritos = () => {
     if (selectedFavorites.length === 0) return;
     try {
       await Promise.all(selectedFavorites.map((id) => removeFavorite(id)));
-      toast.success("Favoritos eliminados");
+      showUniqueToast.success("Favoritos eliminados", {
+        position: "bottom-right",
+      });
       setSelectedFavorites([]);
       await fetchFavorites();
     } catch (error) {
-      toast.error("Error eliminando favoritos");
+      showUniqueToast.error("Error eliminando favoritos", {
+        position: "bottom-right",
+      });
     }
   };
 

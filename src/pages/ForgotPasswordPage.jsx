@@ -1,6 +1,6 @@
 // ForgotPasswordPage.jsx
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 import { useNavigate } from "react-router-dom";
 
 export const ForgotPasswordPage = () => {
@@ -10,17 +10,22 @@ export const ForgotPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/reset-password/request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/reset-password/request`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error en la solicitud");
-      toast.success("Revisa tu correo para continuar", { position: "bottom-right" });
+      showUniqueToast.success("Revisa tu correo para continuar", {
+        position: "bottom-right",
+      });
       // Opcional: redirige o limpia el formulario
     } catch (err) {
-      toast.error(err.message, { position: "bottom-right" });
+      showUniqueToast.error(err.message, { position: "bottom-right" });
     }
   };
 

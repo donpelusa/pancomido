@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Checkbox, Button, Dropdown, List, Modal, Table, Spin } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 import { useAuth } from "../../hooks/useAuth";
 import { formatCLP } from "../../helpers/formatPrice.helper";
 import statusOptions from "../../data/statusOptions.json";
@@ -55,7 +55,7 @@ export const PedidosHistoricos = () => {
         })
         .catch((err) => {
           console.error(err);
-          toast.error(err.message, { position: "bottom-right" });
+          showUniqueToast.error(err.message, { position: "bottom-right" });
           setLoadingOrders(false);
         });
     }
@@ -80,7 +80,7 @@ export const PedidosHistoricos = () => {
         return res.json();
       })
       .then(() => {
-        toast.success(
+        showUniqueToast.success(
           `Pedido #${orderId} actualizado a "${
             statusOptions.find((opt) => opt.key === String(newStatus))?.label
           }"`,
@@ -90,7 +90,7 @@ export const PedidosHistoricos = () => {
       })
       .catch((err) => {
         console.error(err);
-        toast.error(err.message, { position: "bottom-right" });
+        showUniqueToast.error(err.message, { position: "bottom-right" });
       });
   };
 
@@ -123,12 +123,14 @@ export const PedidosHistoricos = () => {
       .then((responses) => {
         const allOk = responses.every((res) => res.ok);
         if (!allOk) throw new Error("Error en la actualización bulk");
-        toast.success("Estados actualizados", { position: "bottom-right" });
+        showUniqueToast.success("Estados actualizados", {
+          position: "bottom-right",
+        });
         fetchOrders();
       })
       .catch((err) => {
         console.error(err);
-        toast.error(err.message, { position: "bottom-right" });
+        showUniqueToast.error(err.message, { position: "bottom-right" });
       });
   };
 
@@ -461,11 +463,14 @@ export const PedidosHistoricos = () => {
           </Spin>
         </div>
       ) : (
-        <List
-          itemLayout="vertical"
-          dataSource={orders}
-          renderItem={renderOrderItem}
-        />
+        // Aquí se envuelve el List en un contenedor con scroll interno:
+        <div className="max-h-[calc(100vh-610px)] overflow-y-auto">
+          <List
+            itemLayout="vertical"
+            dataSource={orders}
+            renderItem={renderOrderItem}
+          />
+        </div>
       )}
 
       <Modal

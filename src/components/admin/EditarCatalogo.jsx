@@ -1,7 +1,7 @@
 // frontend/src/components/admin/EditarCatalogo.jsx
 import { useState, useEffect } from "react";
 import { Button, Switch, Modal, Spin } from "antd";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 import { useAuth } from "../../hooks/useAuth";
 import ProductForm from "./ProductForm";
 import { useProductImages } from "../../hooks/useProductImages";
@@ -63,7 +63,7 @@ export const EditarCatalogo = () => {
       setProducts(mapped);
     } catch (error) {
       console.error("Error fetching products:", error);
-      toast.error(error.message, { position: "bottom-right" });
+      showUniqueToast.error(error.message, { position: "bottom-right" });
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,9 @@ export const EditarCatalogo = () => {
       .then((data) => setAvailableCategories(data))
       .catch((err) => {
         console.error("Error fetching categories:", err);
-        toast.error("Error al cargar categorías", { position: "bottom-right" });
+        showUniqueToast.error("Error al cargar categorías", {
+          position: "bottom-right",
+        });
       });
   };
 
@@ -161,7 +163,7 @@ export const EditarCatalogo = () => {
     const errors = validateForm();
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) {
-      toast.error(
+      showUniqueToast.error(
         "Completa todos los campos obligatorios y carga al menos una imagen.",
         { position: "bottom-right" }
       );
@@ -252,7 +254,7 @@ export const EditarCatalogo = () => {
         if (!imagesResponse.ok) {
           throw new Error(imagesData.error || "Error al guardar imágenes");
         }
-        toast.success("Producto agregado correctamente", {
+        showUniqueToast.success("Producto agregado correctamente", {
           position: "bottom-right",
         });
       } else {
@@ -275,7 +277,7 @@ export const EditarCatalogo = () => {
         if (!response.ok) {
           throw new Error(data.error || "Error al editar producto");
         }
-        toast.success("Producto actualizado correctamente", {
+        showUniqueToast.success("Producto actualizado correctamente", {
           position: "bottom-right",
         });
       }
@@ -283,7 +285,7 @@ export const EditarCatalogo = () => {
       fetchProducts();
       fetchAvailableCategories();
     } catch (error) {
-      toast.error(error.message, { position: "bottom-right" });
+      showUniqueToast.error(error.message, { position: "bottom-right" });
     } finally {
       setIsModalSubmitting(false);
     }
@@ -311,10 +313,12 @@ export const EditarCatalogo = () => {
         if (!response.ok) {
           throw new Error(data.error || "Error al actualizar stock");
         }
-        toast.success("Stock actualizado", { position: "bottom-right" });
+        showUniqueToast.success("Stock actualizado", {
+          position: "bottom-right",
+        });
         fetchProducts();
       } catch (error) {
-        toast.error(error.message, { position: "bottom-right" });
+        showUniqueToast.error(error.message, { position: "bottom-right" });
       } finally {
         setLoadingStock((prev) => ({ ...prev, [id]: false }));
       }
@@ -345,7 +349,7 @@ export const EditarCatalogo = () => {
       .then((res) => res.json())
       .then(() => fetchProducts())
       .catch((err) => {
-        toast.error(err.message, { position: "bottom-right" });
+        showUniqueToast.error(err.message, { position: "bottom-right" });
       });
   };
 
@@ -386,11 +390,13 @@ export const EditarCatalogo = () => {
           if (!response.ok) {
             throw new Error(data.error || "Error al eliminar productos");
           }
-          toast.success("Productos eliminados", { position: "bottom-right" });
+          showUniqueToast.success("Productos eliminados", {
+            position: "bottom-right",
+          });
           fetchProducts();
           fetchAvailableCategories();
         } catch (error) {
-          toast.error(error.message, { position: "bottom-right" });
+          showUniqueToast.error(error.message, { position: "bottom-right" });
         } finally {
           setIsDeletingSelected(false);
         }

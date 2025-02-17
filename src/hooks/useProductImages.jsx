@@ -1,6 +1,6 @@
 // src/hooks/useProductImages.js
 import { useState, useRef } from "react";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 
 export const useProductImages = (API_URL, session, editingProductId) => {
   // Estado para las imágenes: 4 slots (null, File o { secure_url, public_id })
@@ -49,9 +49,9 @@ export const useProductImages = (API_URL, session, editingProductId) => {
         };
         return newArr;
       });
-      toast.success("Imagen cargada", { position: "bottom-right" });
+      showUniqueToast.success("Imagen cargada", { position: "bottom-right" });
     } catch (error) {
-      toast.error(error.message, { position: "bottom-right" });
+      showUniqueToast.error(error.message, { position: "bottom-right" });
     }
   };
 
@@ -69,7 +69,7 @@ export const useProductImages = (API_URL, session, editingProductId) => {
           newArr[slotIndex] = file;
           return newArr;
         });
-        toast.info("Imagen seleccionada. Se subirá al guardar el producto.", {
+        showUniqueToast.info("Imagen seleccionada. Se subirá al guardar el producto.", {
           position: "bottom-right",
         });
       }
@@ -94,9 +94,9 @@ export const useProductImages = (API_URL, session, editingProductId) => {
         if (!response.ok) {
           throw new Error(data.error || "Error al eliminar imagen");
         }
-        toast.success("Imagen eliminada", { position: "bottom-right" });
+        showUniqueToast.success("Imagen eliminada", { position: "bottom-right" });
       } catch (error) {
-        toast.error(error.message, { position: "bottom-right" });
+        showUniqueToast.error(error.message, { position: "bottom-right" });
       }
     }
     setProductImages((prev) => {

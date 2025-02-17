@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Card, Spin, List, Typography } from "antd";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 import { formatCLP } from "../../helpers/formatPrice.helper";
 import statusOptions from "../../data/statusOptions.json";
 
@@ -31,7 +31,7 @@ export const ResumenTienda = () => {
         setLoading(false);
       } catch (error) {
         console.error(error);
-        toast.error(error.message, { position: "bottom-right" });
+        showUniqueToast.error(error.message, { position: "bottom-right" });
         setLoading(false);
       }
     };

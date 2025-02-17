@@ -12,7 +12,7 @@ import {
   Spin,
 } from "antd";
 import { useAuth } from "../../hooks/useAuth";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 
 const { Option } = Select;
 
@@ -189,7 +189,7 @@ export const MisDirecciones = () => {
 
     // Si se intenta eliminar la única dirección existente, mostrar toast
     if (addresses.length === 1 && addresses[0].main) {
-      toast.warning(
+      showUniqueToast.warning(
         "No se puede eliminar la única dirección. Debes agregar nueva dirección y cambiarla a principal",
         {
           position: "bottom-right",

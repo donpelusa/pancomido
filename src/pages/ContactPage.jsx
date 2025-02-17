@@ -1,7 +1,7 @@
 // src/pages/ContactPage.jsx
 
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 import "react-toastify/dist/ReactToastify.css";
 
 export const ContactPage = () => {
@@ -23,7 +23,7 @@ export const ContactPage = () => {
     e.preventDefault();
     // Validación simple
     if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Por favor, complete todos los campos", {
+      showUniqueToast.error("Por favor, complete todos los campos", {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",
@@ -32,7 +32,7 @@ export const ContactPage = () => {
     }
     // Aquí podrías hacer la llamada a una API para enviar el mensaje
     // Simulamos el envío con un toast de éxito
-    toast.success("Mensaje enviado correctamente", {
+    showUniqueToast.success("Mensaje enviado correctamente", {
       position: "bottom-right",
       autoClose: 3000,
       theme: "dark",

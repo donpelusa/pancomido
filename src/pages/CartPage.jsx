@@ -4,7 +4,7 @@ import { Button, Card, List, Space, Typography, Image, Input } from "antd";
 import { useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { formatCLP } from "../helpers/formatPrice.helper";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
@@ -24,7 +24,7 @@ export const CartPage = () => {
       setInputErrors((prev) => ({ ...prev, [id]: false })); // Quitar error si es válido
     } else {
       setInputErrors((prev) => ({ ...prev, [id]: true })); // Marcar error
-      toast.warning("Valor debe ser mayor que 0", {
+      showUniqueToast.warning("Valor debe ser mayor que 0", {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -40,7 +40,7 @@ export const CartPage = () => {
 
   const handleRemoveFromCart = (id) => {
     removeFromCart(id);
-    toast.info("Producto eliminado", {
+    showUniqueToast.info("Producto eliminado", {
       position: "bottom-right",
       autoClose: 3000,
       hideProgressBar: false,

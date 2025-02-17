@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { List, Modal, Button, Table, Spin } from "antd";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 import { useAuth } from "../../hooks/useAuth";
 import { formatCLP } from "../../helpers/formatPrice.helper";
 import statusOptions from "../../data/statusOptions.json";
@@ -62,7 +62,7 @@ export const MisPedidos = () => {
         })
         .catch((err) => {
           console.error(err);
-          toast.error(err.message, { position: "bottom-right" });
+          showUniqueToast.error(err.message, { position: "bottom-right" });
           setLoadingOrders(false);
         });
     }
@@ -106,7 +106,42 @@ export const MisPedidos = () => {
     setSelectedOrder(null);
   };
 
-  // Función para renderizar la tabla con los productos del pedido
+  // Renderizado de cada item de la lista con el nuevo layout
+  const renderOrderItem = (order) => {
+    return (
+      <div
+        onClick={() => showOrderDetails(order)}
+        className="p-4 border border-transparent rounded-lg shadow-md transform hover:scale-101 transition-transform cursor-pointer"
+      >
+        <h3 className="text-lg font-bold">Pedido #{order.id}</h3>
+        <div className="flex justify-between mt-2">
+          <div className="flex flex-col">
+            <span className="text-sm">
+              <span className="font-semibold">Fecha de compra:</span>{" "}
+              {formatDate(order.created_at)}
+            </span>
+            <span className="text-sm">
+              <span className="font-semibold">Entrega programada:</span>{" "}
+              {formatDate(order.order_delivery_date)}
+            </span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-sm">
+              <span className="font-semibold">Status:</span>{" "}
+              {order.status
+                ? order.status
+                : statusMap[order.order_status_id] || "Desconocido"}
+            </span>
+            <span className="text-sm">
+              <strong>Total:</strong> {formatCLP(Number(order.total_purchase))}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Para la vista de detalles del pedido se mantiene la tabla actual (sin cambios)
   const renderOrderProducts = () => {
     if (!selectedOrder || !selectedOrder.products) return null;
     return (
@@ -194,45 +229,19 @@ export const MisPedidos = () => {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
       {orders.length === 0 ? (
         <p>No has realizado pedidos aún.</p>
       ) : (
         <List
-          itemLayout="vertical"
           dataSource={orders}
           renderItem={(order) => (
-            <List.Item
-              onClick={() => showOrderDetails(order)}
-              style={{ cursor: "pointer" }}
-            >
-              <List.Item.Meta
-                title={`Pedido #${order.id}`}
-                description={
-                  <>
-                    <p>
-                      <strong>Fecha de compra:</strong>{" "}
-                      {formatDate(order.created_at)}
-                    </p>
-                    <p>
-                      <strong>Entrega programada:</strong>{" "}
-                      {formatDate(order.order_delivery_date)}
-                    </p>
-                    <p>
-                      <strong>Status:</strong>{" "}
-                      {order.status
-                        ? order.status
-                        : statusMap[order.order_status_id] || "Desconocido"}
-                    </p>
-                  </>
-                }
-              />
-              <p>
-                <strong>Total:</strong>{" "}
-                {formatCLP(Number(order.total_purchase))}
-              </p>
+            <List.Item style={{ padding: 0, border: "none" }}>
+              {renderOrderItem(order)}
             </List.Item>
           )}
+          itemLayout="vertical"
+          split={false}
         />
       )}
 
@@ -250,7 +259,7 @@ export const MisPedidos = () => {
         {selectedOrder && (
           <div>
             {renderOrderProducts()}
-            <div className="mt-4 border-t pt-4" style={{ textAlign: "center" }}>
+            <div className="mt-4 border-t pt-4 text-center text-sm">
               <p>
                 <strong>Total de la compra:</strong>{" "}
                 {formatCLP(Number(selectedOrder.total_purchase))}
@@ -276,3 +285,5 @@ export const MisPedidos = () => {
     </div>
   );
 };
+
+export default MisPedidos;

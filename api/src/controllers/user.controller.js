@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Address = require('../models/Address');
 const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
+const { validaRut } = require('../helpers/validateRut.helper');
 
 const getProfile = async (req, res, next) => {
     try {
@@ -26,6 +27,23 @@ const updateProfile = async (req, res, next) => {
         const userId = req.user.id;
         // Extraer campos permitidos
         const { name, lastname, mail, password, phone, rut } = req.body;
+
+        // Validar teléfono: debe contener EXACTAMENTE 9 dígitos (sólo números)
+        if (phone && !/^\d{9}$/.test(phone)) {
+            return res.status(400).json({ error: 'El teléfono debe contener exactamente 9 números' });
+        }
+
+        // Validar RUT si se proporciona:
+        if (rut) {
+            // Validar formato: 8 dígitos, guión y 1 dígito o "k/K"
+            if (!/^\d{8}-[0-9kK]$/.test(rut)) {
+                return res.status(400).json({ error: 'Formato Incorrecto. Ej: 99999999-9' });
+            }
+            // Validar lógica del RUT
+            if (!validaRut(rut)) {
+                return res.status(400).json({ error: 'RUT no válido. Intenta nuevamente' });
+            }
+        }
 
         // Validar que el RUT no esté en uso por otro usuario
         const existingUserByRut = await User.findUserByRut(rut);

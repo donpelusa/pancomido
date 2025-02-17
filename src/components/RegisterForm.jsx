@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ export const RegisterForm = () => {
 
       // Si el registro es exitoso...
       // Mostramos un toast de éxito y redirigimos al login.
-      toast.success("Registro exitoso. Ahora puedes iniciar sesión.", {
+      showUniqueToast.success("Registro exitoso. Ahora puedes iniciar sesión.", {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",

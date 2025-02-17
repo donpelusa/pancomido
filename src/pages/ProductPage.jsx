@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Spin } from "antd";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { formatCLP } from "../helpers/formatPrice.helper";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 import "react-toastify/dist/ReactToastify.css";
 
 export const ProductPage = () => {
@@ -41,27 +42,38 @@ export const ProductPage = () => {
         }
       } catch (error) {
         console.error(error);
-        toast.error("Error al cargar el producto");
+        showUniqueToast.error("Error al cargar el producto", {
+          position: "bottom-right",
+        });
       }
     };
 
     fetchProductDetail();
   }, [id]);
 
-  if (!product)
-    return <p className="text-center mt-10">Cargando producto...</p>;
+  if (!product) {
+    return (
+      <div className="flex justify-center items-center mt-10">
+        <Spin tip="Cargando producto...">
+          <div style={{ width: "350px", height: "150px" }} />
+        </Spin>
+      </div>
+    );
+  }
 
   const mainImage = imageArray[0];
   const thumbnails = imageArray.slice(1, 4);
 
   const handleQuantityChange = (newQuantity) => {
+    const stock = Number(product.stock);
     if (newQuantity < 1) return;
-    if (newQuantity > product.stock) {
-      toast.warning("No hay más unidades disponibles para agregar", {
+    if (newQuantity > stock) {
+      showUniqueToast.warning("No hay más unidades disponibles para agregar", {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",
       });
+      setQuantity(stock);
       return;
     }
     setQuantity(newQuantity);
@@ -69,15 +81,16 @@ export const ProductPage = () => {
 
   const handleAddToCart = () => {
     if (product.stock === 0) {
-      toast.warning("Producto no disponible, sin stock", {
+      showUniqueToast.warning("Producto no disponible, sin stock", {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",
       });
       return;
     }
-    if (!session?.token) {
-      toast.info("Para agregar al carro, inicia sesión", {
+    // Validamos que la cantidad no exceda el stock, por si acaso.
+    if (quantity > product.stock) {
+      showUniqueToast.warning("No hay suficientes unidades disponibles", {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",
@@ -85,7 +98,7 @@ export const ProductPage = () => {
       return;
     }
     addToCart(product, quantity);
-    toast.success("Producto agregado al carro", {
+    showUniqueToast.success("Producto agregado al carro", {
       position: "bottom-right",
       autoClose: 3000,
       theme: "dark",
@@ -127,10 +140,7 @@ export const ProductPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Imagen principal */}
         <div className="flex justify-center">
-          <div
-            className="p-4"
-            style={{ width: "31.25rem", height: "31.25rem" }}
-          >
+          <div className="p-4" style={{ width: "38rem", height: "38rem" }}>
             <img
               src={mainImage}
               alt={product.product}
@@ -210,7 +220,7 @@ export const ProductPage = () => {
 
       {/* Sección de descripción e información nutricional */}
       <div className="grid grid-cols-1 md:grid-cols-2 mt-12 gap-8">
-        <div>
+        <div className="pr-18">
           <h2 className="text-xl font-bold">Descripción del producto</h2>
           <p className="text-gray-600 mt-2 whitespace-pre-wrap">
             {product.description}
@@ -219,9 +229,21 @@ export const ProductPage = () => {
         <div>
           <h2 className="text-xl font-bold">Información Nutricional</h2>
           <div className="mt-2 p-4 border border-gray-300 rounded">
-            <p className="text-gray-700 whitespace-pre-wrap">
-              {product.nutrition}
-            </p>
+            <table className="w-full text-gray-700">
+              <tbody>
+                {product.nutrition.split("\n").map((line, idx) => {
+                  // Separamos en dos partes usando el primer ":" como separador
+                  const [label, ...rest] = line.split(":");
+                  const value = rest.join(":").trim();
+                  return (
+                    <tr key={idx} className="border-b border-gray-200">
+                      <td className="font-bold py-1">{label.trim()}:</td>
+                      <td className="py-1 pl-2">{value}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

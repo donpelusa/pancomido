@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, Typography, Spin, List } from "antd";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 import { useAuth } from "../../hooks/useAuth";
 import statusOptions from "../../data/statusOptions.json";
 
@@ -41,7 +41,7 @@ export const MiCuenta = () => {
         })
         .catch((err) => {
           console.error(err);
-          toast.error(err.message, { position: "bottom-right" });
+          showUniqueToast.error(err.message, { position: "bottom-right" });
           setLoadingProfile(false);
         });
     }
@@ -65,7 +65,7 @@ export const MiCuenta = () => {
         })
         .catch((err) => {
           console.error(err);
-          toast.error("Error al cargar direcciones", {
+          showUniqueToast.error("Error al cargar direcciones", {
             position: "bottom-right",
           });
         });
@@ -101,7 +101,7 @@ export const MiCuenta = () => {
         })
         .catch((err) => {
           console.error(err);
-          toast.error(err.message, { position: "bottom-right" });
+          showUniqueToast.error(err.message, { position: "bottom-right" });
           setLoadingOrders(false);
         });
     }

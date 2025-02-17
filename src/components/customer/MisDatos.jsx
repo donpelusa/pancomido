@@ -1,8 +1,9 @@
-// src/components/customer/MisDatos.jsx
+// frontend/src/components/customer/MisDatos.jsx
+
 import { useState, useEffect } from "react";
 import { Form, Input, Button, Modal, Tooltip, Spin } from "antd";
 import { useAuth } from "../../hooks/useAuth";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 // Importamos el helper de validación de RUT
 import { validaRut } from "../../helpers/validateRut.helper";
 
@@ -19,7 +20,7 @@ export const MisDatos = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  // Función para cargar perfil (por ejemplo, mediante GET /api/profile)
+  // Función para cargar perfil
   const fetchProfile = async () => {
     setLoadingProfile(true);
     try {
@@ -56,6 +57,35 @@ export const MisDatos = () => {
     setIsModalVisible(true);
   };
 
+  // Validador personalizado para el campo RUT
+  const validateRutField = (_, value) => {
+    if (!value) {
+      return Promise.reject("El RUT es requerido");
+    }
+    // Verifica el formato: exactamente 8 dígitos, un guión y 1 dígito o la letra k/K.
+    const formatRegex = /^\d{8}-[0-9kK]$/;
+    if (!formatRegex.test(value)) {
+      return Promise.reject("Formato Incorrecto. Ej: 99999999-9");
+    }
+    // Verifica la validez del dígito verificador usando el helper
+    if (!validaRut(value)) {
+      return Promise.reject("RUT no válido. Intenta nuevamente");
+    }
+    return Promise.resolve();
+  };
+
+  // Validador para el campo teléfono: debe tener exactamente 9 dígitos.
+  const validatePhoneField = (_, value) => {
+    if (!value) {
+      return Promise.reject("El teléfono es requerido");
+    }
+    const phoneRegex = /^\d{9}$/;
+    if (!phoneRegex.test(value)) {
+      return Promise.reject("El teléfono debe contener exactamente 9 números");
+    }
+    return Promise.resolve();
+  };
+
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
@@ -72,7 +102,7 @@ export const MisDatos = () => {
       // Preservamos el token del usuario
       const updatedUserWithToken = { ...updatedUser, token: session.token };
       setUserData(updatedUserWithToken);
-      toast.success("Datos actualizados correctamente", {
+      showUniqueToast.success("Datos actualizados correctamente", {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",
@@ -82,7 +112,10 @@ export const MisDatos = () => {
       handleSession(updatedUserWithToken);
     } catch (error) {
       console.error(error);
-      toast.error(error.message, { position: "bottom-right", theme: "dark" });
+      showUniqueToast.error(error.message, {
+        position: "bottom-right",
+        theme: "dark",
+      });
     }
   };
 
@@ -168,29 +201,25 @@ export const MisDatos = () => {
                     color: "#555",
                   }}
                 >
-                  (Formato: 11111111-1)
+                  (Formato: 99999999-9)
                 </i>
               </span>
             }
             rules={[
               { required: true, message: "El RUT es requerido" },
-              {
-                validator: (_, value) =>
-                  value && validaRut(value)
-                    ? Promise.resolve()
-                    : Promise.reject(
-                        "RUT inválido, debe tener el formato 11111111-1"
-                      ),
-              },
+              { validator: validateRutField },
             ]}
-            validateTrigger={[]} // Se valida al hacer submit
+            validateTrigger={[]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="phone"
             label="Teléfono"
-            rules={[{ required: true, message: "El teléfono es requerido" }]}
+            rules={[
+              { required: true, message: "El teléfono es requerido" },
+              { validator: validatePhoneField },
+            ]}
           >
             <Input />
           </Form.Item>

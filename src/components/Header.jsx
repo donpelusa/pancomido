@@ -8,7 +8,7 @@ import { IoCartOutline } from "react-icons/io5";
 import { LuUserRound } from "react-icons/lu";
 import logo from "../assets/images/logoWeb_cortado.png";
 import { HeaderSearch } from "../components/SearchBar";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 
 export const Header = () => {
   const { session, logout } = useAuth();
@@ -22,7 +22,7 @@ export const Header = () => {
 
     // Llama a logout y muestra la notificación
     logout();
-    toast.info("Sesión de usuario cerrada", {
+    showUniqueToast.info("Sesión de usuario cerrada", {
       position: "bottom-right",
       autoClose: 3000,
       hideProgressBar: false,

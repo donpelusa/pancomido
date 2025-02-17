@@ -10,7 +10,7 @@ import {
   message,
   Spin,
 } from "antd";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../../helpers/showUniqueToast.helper";
 import { useAuth } from "../../hooks/useAuth";
 
 export const EditarUsuarios = () => {
@@ -41,7 +41,7 @@ export const EditarUsuarios = () => {
       setUsers(data);
     } catch (error) {
       console.error(error);
-      toast.error(error.message, { position: "bottom-right" });
+      showUniqueToast.error(error.message, { position: "bottom-right" });
     } finally {
       setLoading(false);
     }
@@ -92,12 +92,14 @@ export const EditarUsuarios = () => {
               })
             )
           );
-          toast.success("Usuarios eliminados", { position: "bottom-right" });
+          showUniqueToast.success("Usuarios eliminados", {
+            position: "bottom-right",
+          });
           fetchUsers();
           setSelectedIds([]);
           setSelectAll(false);
         } catch (error) {
-          toast.error(error.message, { position: "bottom-right" });
+          showUniqueToast.error(error.message, { position: "bottom-right" });
         }
       },
     });
@@ -119,14 +121,14 @@ export const EditarUsuarios = () => {
           })
         )
       );
-      toast.success(`Usuarios cambiados a ${newRole}`, {
+      showUniqueToast.success(`Usuarios cambiados a ${newRole}`, {
         position: "bottom-right",
       });
       fetchUsers();
       setSelectedIds([]);
       setSelectAll(false);
     } catch (error) {
-      toast.error(error.message, { position: "bottom-right" });
+      showUniqueToast.error(error.message, { position: "bottom-right" });
     }
   };
 
@@ -158,7 +160,9 @@ export const EditarUsuarios = () => {
       if (!res.ok) {
         throw new Error(data.error || "Error al actualizar datos del usuario");
       }
-      toast.success("Datos actualizados", { position: "bottom-right" });
+      showUniqueToast.success("Datos actualizados", {
+        position: "bottom-right",
+      });
       setIsModalVisible(false);
       setEditingUser(null);
       fetchUsers();

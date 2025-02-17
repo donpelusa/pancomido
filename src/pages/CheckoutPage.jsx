@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { formatCLP } from "../helpers/formatPrice.helper";
 import { useNavigate } from "react-router-dom";
 import { Spin, Button } from "antd";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 
 export const CheckoutPage = () => {
   const { cart } = useCart();
@@ -55,7 +55,7 @@ export const CheckoutPage = () => {
         })
         .catch((err) => {
           console.error(err);
-          toast.error("Error al cargar datos del usuario", {
+          showUniqueToast.error("Error al cargar datos del usuario", {
             position: "bottom-right",
           });
           setLoadingUserData(false);
@@ -92,7 +92,7 @@ export const CheckoutPage = () => {
         })
         .catch((err) => {
           console.error("Error fetching addresses:", err);
-          toast.error("Error al cargar direcciones", {
+          showUniqueToast.error("Error al cargar direcciones", {
             position: "bottom-right",
           });
         });
@@ -117,16 +117,19 @@ export const CheckoutPage = () => {
 
     // Validar que el usuario tenga RUT
     if (!userData || !userData.rut) {
-      toast.error("Debes actualizar tus datos (RUT) para realizar la compra", {
-        position: "bottom-right",
-        autoClose: 3000,
-        theme: "dark",
-      });
+      showUniqueToast.error(
+        "Debes actualizar tus datos (RUT) para realizar la compra",
+        {
+          position: "bottom-right",
+          autoClose: 3000,
+          theme: "dark",
+        }
+      );
       setProcessingPurchase(false);
       return;
     }
     if (!selectedAddress) {
-      toast.error("Debes seleccionar una dirección de envío", {
+      showUniqueToast.error("Debes seleccionar una dirección de envío", {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",
@@ -181,7 +184,7 @@ export const CheckoutPage = () => {
             errorData.details.forEach((detail) => {
               const prod = cart.find((item) => item.id === detail.productId);
               if (prod) {
-                toast.error(
+                showUniqueToast.error(
                   `${prod.product} no tiene suficiente stock. Prueba con menos cantidad.`,
                   {
                     position: "bottom-right",
@@ -201,7 +204,7 @@ export const CheckoutPage = () => {
       navigate("/success");
     } catch (error) {
       console.error(error);
-      toast.error(error.message, {
+      showUniqueToast.error(error.message, {
         position: "bottom-right",
         autoClose: 3000,
         theme: "dark",

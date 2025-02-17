@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showUniqueToast } from "../helpers/showUniqueToast.helper";
 import "react-toastify/dist/ReactToastify.css";
 
 export const LoginForm = () => {
@@ -76,7 +76,7 @@ export const LoginForm = () => {
         token: data.token,
       });
 
-      toast.success("Inicio de sesión exitoso", {
+      showUniqueToast.success("Inicio de sesión exitoso", {
         position: "bottom-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -92,7 +92,7 @@ export const LoginForm = () => {
     } catch (err) {
       console.error("❌ Error en el login:", err.message);
 
-      toast.error(err.message, {
+      showUniqueToast.error(err.message, {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: false,
